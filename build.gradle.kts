@@ -21,6 +21,9 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	implementation("org.springframework.boot:spring-boot-starter-jdbc")
+	runtimeOnly("com.h2database:h2")
+	implementation("com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre11")
 }
 
 tasks.withType<KotlinCompile> {
