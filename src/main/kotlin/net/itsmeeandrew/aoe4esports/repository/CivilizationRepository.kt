@@ -5,8 +5,9 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 
 @Repository
-class CivilizationRepository(private val jdbcTemplate: JdbcTemplate) {
-    fun findAll(): List<Civilization> = jdbcTemplate.query("SELECT * FROM Civilization") { rs, _ ->
+class CivilizationRepository(private val jdbc: JdbcTemplate) {
+
+    fun findAll(): List<Civilization> = jdbc.query("SELECT * FROM Civilization") { rs, _ ->
         Civilization(
             rs.getInt("id"),
             rs.getString("name")

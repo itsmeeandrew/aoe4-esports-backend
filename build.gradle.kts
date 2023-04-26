@@ -24,6 +24,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-jdbc")
 	runtimeOnly("com.h2database:h2")
 	implementation("com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre11")
+	implementation("org.jsoup:jsoup:1.15.4")
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 tasks.withType<KotlinCompile> {
