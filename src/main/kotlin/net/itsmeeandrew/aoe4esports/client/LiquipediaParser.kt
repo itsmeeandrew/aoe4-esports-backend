@@ -1,6 +1,7 @@
 package net.itsmeeandrew.aoe4esports.client
 
 import net.itsmeeandrew.aoe4esports.model.Tournament
+import net.itsmeeandrew.aoe4esports.model.TournamentRound
 import net.itsmeeandrew.aoe4esports.util.TournamentFormat
 import net.itsmeeandrew.aoe4esports.util.TournamentTier
 import org.jsoup.Jsoup
@@ -35,16 +36,14 @@ class LiquipediaParser {
 
         val tournamentInfoMap = tournamentInfoElement
             ?.select("> div")
-            ?.filter { it -> it.childNodes().size == 2 }
-            ?.mapNotNull {
-                val infoKey = it.firstElementChild()?.text()
-                val infoValue = it.lastElementChild()?.text()
+            ?.filter { e -> e.childNodes().size == 2 }
+            ?.mapNotNull { e ->
+                val infoKey = e.firstElementChild()?.text()
+                val infoValue = e.lastElementChild()?.text()
 
                 if (!infoKey.isNullOrBlank() && !infoValue.isNullOrBlank()) {
                     infoKey.trim().dropLast(1) to infoValue.trim()
-                } else {
-                    null
-                }
+                } else null
             }?.toMap() ?: emptyMap()
 
         val twitchUrl = tournamentInfoElement?.select("a i.lp-twitch")?.first()?.parent()?.attr("href") ?: ""
@@ -67,5 +66,26 @@ class LiquipediaParser {
         }
 
         return Tournament(endDate, format, tournamentId, logoUrl, name, startDate, tier, twitchUrl)
+    }
+
+    fun getTournamentRounds(htmlString: String, tournament: Tournament): List<TournamentRound> {
+        val root = cleanAndParseHtmlString(htmlString)
+
+        val tournamentRounds: MutableList<TournamentRound> = root.select(".tabs-static ul.tabs li a").mapNotNull { element ->
+            val id = element.attr("title")
+            val name = element.text()
+
+            if (id.isNotEmpty() && !name.startsWith("Age of Empires")) {
+                TournamentRound(id, name, tournament.id)
+            } else null
+        }.toMutableList()
+
+        tournamentRounds.add(TournamentRound(
+            tournament.id,
+            "Main Event",
+            tournament.id
+        ))
+
+        return tournamentRounds
     }
 }
