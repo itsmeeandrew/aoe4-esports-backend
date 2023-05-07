@@ -8,11 +8,20 @@ import org.springframework.stereotype.Repository
 class TournamentRepository(private val jdbc: JdbcTemplate) {
     fun createTournament(tournament: Tournament): Tournament? {
         return try {
-            val queryString = """
+            val sql = """
                         INSERT INTO Tournament (id, name, start_date, end_date, format, logo_url, twitch_url, tier)
-                        VALUES ('${tournament.id}', '${tournament.name}', '${tournament.startDate}', '${tournament.endDate}', '${tournament.format}', '${tournament.logoUrl}', '${tournament.twitchUrl}', '${tournament.tier}')
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """.trimIndent()
-            jdbc.update(queryString)
+            jdbc.update(sql) { ps ->
+                ps.setString(1, tournament.id)
+                ps.setString(2, tournament.name)
+                ps.setObject(3, tournament.startDate)
+                ps.setObject(4, tournament.endDate)
+                ps.setString(5, tournament.format.toString())
+                ps.setString(6, tournament.logoUrl)
+                ps.setString(7, tournament.twitchUrl)
+                ps.setString(8, tournament.tier.toString())
+            }
             tournament
         } catch (e: Exception) {
             println("Error while trying to create tournament. ${e.message}")

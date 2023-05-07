@@ -2,7 +2,6 @@ package net.itsmeeandrew.aoe4esports.client
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import net.itsmeeandrew.aoe4esports.model.Tournament
 import net.itsmeeandrew.aoe4esports.model.TournamentRound
 import net.itsmeeandrew.aoe4esports.util.TournamentTier
 import org.springframework.stereotype.Component
@@ -33,7 +32,9 @@ class LiquipediaClient(
         return getPageUri("Age_of_Empires_IV/$tier-Tier_Tournaments")
     }
 
-    private fun getJson(str: String?): JsonNode {
+    private fun toJson(str: String?): JsonNode {
+        println("Pausing for 2s before another call.")
+        Thread.sleep(2000)
         return ObjectMapper().readTree(str ?: " ")
     }
 
@@ -43,39 +44,39 @@ class LiquipediaClient(
             .retrieve()
             .bodyToMono(String::class.java)
             .block()
-        val resJson = getJson(response)
+        val resJson = toJson(response)
         val htmlString = resJson.get("parse").get("text").get("*").asText()
 
         return liquipediaParser.getTournamentIds(htmlString);
     }
 
-    fun getTournament(tournamentId: String): Tournament {
+    fun getTournamentParser(tournamentId: String): LiquipediaParser.TournamentParser {
         val response = client.get()
             .uri(getPageUri(tournamentId))
             .retrieve()
             .bodyToMono(String::class.java)
             .block()
 
-        val resJson = getJson(response)
+        val resJson = toJson(response)
         val metaData = resJson.at("/parse/properties")
         val logoUrl = metaData.firstOrNull { it["name"].textValue() == "metaimageurl" }?.get("*")?.asText() ?: ""
         val name = metaData.firstOrNull { it["name"].textValue() == "displaytitle" }?.get("*")?.asText() ?: ""
 
         val htmlString = resJson.at("/parse/text/*").asText()
 
-        return liquipediaParser.getTournament(htmlString, tournamentId, name, logoUrl)
+        return liquipediaParser.TournamentParser(htmlString, tournamentId, logoUrl, name)
     }
 
-    fun getTournamentRounds(tournament: Tournament): List<TournamentRound> {
+    fun getTournamentRoundParser(tournamentRound: TournamentRound): LiquipediaParser.TournamentRoundParser {
         val response = client.get()
-            .uri(getPageUri(tournament.id))
+            .uri(getPageUri(tournamentRound.id))
             .retrieve()
             .bodyToMono(String::class.java)
             .block()
 
-        val resJson = getJson(response)
+        val resJson = toJson(response)
         val htmlString = resJson.at("/parse/text/*").asText()
 
-        return liquipediaParser.getTournamentRounds(htmlString, tournament)
+        return liquipediaParser.TournamentRoundParser(htmlString, tournamentRound)
     }
 }

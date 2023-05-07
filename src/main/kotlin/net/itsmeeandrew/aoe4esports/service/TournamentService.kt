@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class TournamentService(private val tournamentRepository: TournamentRepository) {
-    fun createTournament(t: Tournament): Boolean {
-        return tournamentRepository.createTournament(t) != null
+    fun createTournament(t: Tournament): Tournament? {
+        return tournamentRepository.createTournament(t)
     }
 }

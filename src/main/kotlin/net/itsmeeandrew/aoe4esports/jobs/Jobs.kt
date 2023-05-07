@@ -2,40 +2,59 @@ package net.itsmeeandrew.aoe4esports.jobs
 
 import jakarta.annotation.PostConstruct
 import net.itsmeeandrew.aoe4esports.client.LiquipediaClient
+import net.itsmeeandrew.aoe4esports.model.Series
 import net.itsmeeandrew.aoe4esports.model.Tournament
+import net.itsmeeandrew.aoe4esports.model.TournamentRound
+import net.itsmeeandrew.aoe4esports.service.SeriesService
 import net.itsmeeandrew.aoe4esports.service.TournamentRoundService
 import net.itsmeeandrew.aoe4esports.service.TournamentService
 import org.springframework.stereotype.Component
 
 @Component
 class Jobs(
+    private val liquipediaClient: LiquipediaClient,
+    private val seriesService: SeriesService,
     private val tournamentService: TournamentService,
     private val tournamentRoundService: TournamentRoundService,
-    private val liquipediaClient: LiquipediaClient
 ) {
 
     @PostConstruct
     fun init() {
-        val tournament = addTournament("N4C/1")
-        if (tournament != null) {
-            addTournamentRounds(tournament)
+        val tournamentParser = liquipediaClient.getTournamentParser("GENESIS")
+        val tournament = tournamentParser.parseTournament()
+        addTournament(tournament)
+
+        val tournamentRounds = tournamentParser.parseTournamentRounds()
+
+        tournamentRounds.forEach { tr ->
+            addTournamentRound(tr)
+
+            val tournamentRoundParser = liquipediaClient.getTournamentRoundParser(tr)
+            val series = tournamentRoundParser.parseSeries()
+            series.forEach { s ->
+                addSeries(s)
+            }
         }
     }
 
-    fun addTournament(tournamentId: String): Tournament? {
-        val tournament = liquipediaClient.getTournament("N4C/1")
-        val isSuccess = tournamentService.createTournament(tournament)
-        return if (isSuccess) {
-            println("Sucessfully added tournament: ${tournament.name}")
-            tournament
-        } else null
+    private fun addTournament(tournament: Tournament) {
+        val createdTournament = tournamentService.createTournament(tournament)
+        if (createdTournament != null) {
+            println("Added tournament: ${createdTournament.name}")
+        }
     }
 
-    fun addTournamentRounds(tournament: Tournament) {
-        val tournamentRounds = liquipediaClient.getTournamentRounds(tournament)
-        tournamentRounds.forEach { tr ->
-            val isSuccess = tournamentRoundService.createTournamentRound(tr)
-            if (isSuccess) println("Successfully added tournament round: ${tr.name}")
+    private fun addTournamentRound(tournamentRound: TournamentRound) {
+        val createdTournamentRound = tournamentRoundService.createTournamentRound(tournamentRound)
+        if (createdTournamentRound != null) {
+            println("Added tournament round: ${createdTournamentRound.name}")
+        }
+    }
+
+    private fun addSeries(series: Series) {
+        val createdSeries = seriesService.createSeries(series)
+        if (createdSeries != null) {
+            println("Added series: [${createdSeries.id}]")
         }
     }
 }

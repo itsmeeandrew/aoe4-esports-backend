@@ -1,6 +1,6 @@
 package net.itsmeeandrew.aoe4esports.model
 
-data class Civilization(
-    val id: Int,
+data class Player(
+    val id: Int?,
     val name: String
 )
