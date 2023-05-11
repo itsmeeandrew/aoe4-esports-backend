@@ -7,6 +7,16 @@ import org.springframework.stereotype.Service
 @Service
 class SeriesService(private val seriesRepository: SeriesRepository) {
     fun createSeries(series: Series): Series? {
-        return seriesRepository.addSeries(series)
+        val existingSeries = findByDetails(series)
+        return if (existingSeries == null) {
+            seriesRepository.addSeries(series)
+        } else {
+            println("Series already exists in database.")
+            existingSeries
+        }
+    }
+
+    fun findByDetails(series: Series): Series? {
+        return seriesRepository.findByDetails(series.homePlayerId, series.awayPlayerId, series.tournamentRoundId, series.bracketRound)
     }
 }

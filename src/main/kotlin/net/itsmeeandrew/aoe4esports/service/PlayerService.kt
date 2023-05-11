@@ -15,6 +15,6 @@ class PlayerService(private val playerRepository: PlayerRepository) {
     }
 
     fun addPlayer(player: Player): Player? {
-        return playerRepository.createPlayer(player)
+        return playerRepository.create(player)
     }
 }
