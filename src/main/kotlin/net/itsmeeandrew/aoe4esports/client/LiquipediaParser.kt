@@ -167,7 +167,7 @@ class LiquipediaParser(
             return if (existingPlayer != null) {
                 existingPlayer.id
             } else {
-                playerService.addPlayer(Player(null, name))?.id
+                playerService.create(Player(null, name))?.id
             }
         }
 

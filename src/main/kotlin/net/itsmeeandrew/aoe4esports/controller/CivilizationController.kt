@@ -13,6 +13,6 @@ class CivilizationController(private val civilizationService: CivilizationServic
 
     @GetMapping("/civilizations", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getCivilizations(): List<Civilization> {
-        return civilizationService.getCivilizations()
+        return civilizationService.findAll()
     }
 }

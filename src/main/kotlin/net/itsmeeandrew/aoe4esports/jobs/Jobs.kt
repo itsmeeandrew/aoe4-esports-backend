@@ -54,21 +54,21 @@ class Jobs(
     }
 
     private fun addTournament(tournament: Tournament) {
-        val createdTournament = tournamentService.createTournament(tournament)
+        val createdTournament = tournamentService.create(tournament)
         if (createdTournament != null) {
             println("Added tournament: ${createdTournament.name}")
         }
     }
 
     private fun addTournamentRound(tournamentRound: TournamentRound) {
-        val createdTournamentRound = tournamentRoundService.createTournamentRound(tournamentRound)
+        val createdTournamentRound = tournamentRoundService.create(tournamentRound)
         if (createdTournamentRound != null) {
             println("Added tournament round: ${createdTournamentRound.name}")
         }
     }
 
     private fun addSeries(series: Series): Series? {
-        val createdSeries = seriesService.createSeries(series)
+        val createdSeries = seriesService.create(series)
         return if (createdSeries != null) {
             println("Added series: [${createdSeries.id}]")
             createdSeries

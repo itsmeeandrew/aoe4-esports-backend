@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class TournamentRoundRepository(private val jdbc: JdbcTemplate) {
-    fun createTournamentRound(tournamentRound: TournamentRound): TournamentRound? {
+    fun create(tournamentRound: TournamentRound): TournamentRound? {
         return try {
             val sql = """
                         INSERT INTO TournamentRound (id, name, tournament_id)

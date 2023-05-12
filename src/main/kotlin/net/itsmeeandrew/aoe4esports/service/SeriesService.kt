@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class SeriesService(private val seriesRepository: SeriesRepository) {
-    fun createSeries(series: Series): Series? {
+    fun create(series: Series): Series? {
         val existingSeries = findByDetails(series)
         return if (existingSeries == null) {
-            seriesRepository.addSeries(series)
+            seriesRepository.create(series)
         } else {
             println("Series already exists in database.")
             existingSeries

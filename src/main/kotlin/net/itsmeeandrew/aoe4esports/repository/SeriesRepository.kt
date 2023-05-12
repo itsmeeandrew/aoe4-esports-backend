@@ -12,7 +12,7 @@ import java.time.LocalTime
 
 @Repository
 class SeriesRepository(private val jdbc: JdbcTemplate) {
-    fun addSeries(series: Series): Series? {
+    fun create(series: Series): Series? {
         val sql = """
             INSERT INTO Series (home_player_id, home_score, away_player_id, away_score, date, time, best_of, bracket_round, tournament_round_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
