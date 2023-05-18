@@ -1,5 +1,9 @@
 package net.itsmeeandrew.aoe4esports.client
 
+import net.itsmeeandrew.aoe4esports.common.TournamentFormat
+import net.itsmeeandrew.aoe4esports.common.TournamentTier
+import net.itsmeeandrew.aoe4esports.common.getText
+import net.itsmeeandrew.aoe4esports.common.liquipediaDateFormat
 import net.itsmeeandrew.aoe4esports.model.Match
 import net.itsmeeandrew.aoe4esports.model.Series
 import net.itsmeeandrew.aoe4esports.model.Tournament
@@ -7,10 +11,6 @@ import net.itsmeeandrew.aoe4esports.model.TournamentRound
 import net.itsmeeandrew.aoe4esports.service.CivilizationService
 import net.itsmeeandrew.aoe4esports.service.MapService
 import net.itsmeeandrew.aoe4esports.service.PlayerService
-import net.itsmeeandrew.aoe4esports.common.TournamentFormat
-import net.itsmeeandrew.aoe4esports.common.TournamentTier
-import net.itsmeeandrew.aoe4esports.common.getText
-import net.itsmeeandrew.aoe4esports.common.liquipediaDateFormat
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -98,7 +98,7 @@ class LiquipediaParser(
             }.toMutableList()
 
             tournamentRounds.add(TournamentRound(
-                tournamentId,
+                "$tournamentId/Main/Event",
                 "Main Event",
                 tournamentId
             ))
