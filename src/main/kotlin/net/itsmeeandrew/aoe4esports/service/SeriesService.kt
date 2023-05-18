@@ -19,8 +19,4 @@ class SeriesService(private val seriesRepository: SeriesRepository) {
     fun find(series: Series): Series? {
         return seriesRepository.find(series)
     }
-
-    fun findOrCreate(series: Series): Series? {
-        return find(series) ?: create(series)
-    }
 }
