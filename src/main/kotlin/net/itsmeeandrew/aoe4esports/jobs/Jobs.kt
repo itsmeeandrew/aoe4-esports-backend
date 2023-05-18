@@ -34,20 +34,10 @@ class Jobs(
 
             val tournamentRoundParser = liquipediaClient.getTournamentRoundParser(tr)
             val seriesAndMatches = tournamentRoundParser.parseSeriesAndMatches()
-            seriesAndMatches.forEach { seriesAndMatchesPair ->
-                val (series, matches) = seriesAndMatchesPair
-                val existingSeries = seriesService.findByDetails(series)
-                if (existingSeries == null) {
-                    println("Series created for matches.")
-                    val createdSeries = addSeries(series)
-                    matches.forEach { match ->
-                        addMatch(match.copy(seriesId = createdSeries?.id))
-                    }
-                } else {
-                    println("Series already exists for matches.")
-                    matches.forEach { match ->
-                        addMatch(match.copy(seriesId = existingSeries.id))
-                    }
+            seriesAndMatches.forEach { (series, matches) ->
+                val addedSeries = addSeries(series)
+                matches.forEach { match ->
+                    addMatch(match.copy(seriesId = addedSeries?.id))
                 }
             }
         }
@@ -68,11 +58,7 @@ class Jobs(
     }
 
     private fun addSeries(series: Series): Series? {
-        val createdSeries = seriesService.create(series)
-        return if (createdSeries != null) {
-            println("Added series: [${createdSeries.id}]")
-            createdSeries
-        } else null
+        return seriesService.findOrCreate(series)
     }
 
     private fun addMatch(match: Match) {

@@ -15,6 +15,13 @@ class PlayerService(private val playerRepository: PlayerRepository) {
     }
 
     fun create(player: Player): Player? {
+        if (player.name.isBlank()) {
+            return null
+        }
         return playerRepository.create(player)
+    }
+
+    fun findByNameOrCreate(name: String): Player? {
+        return findByName(name) ?: create(Player(null, name))
     }
 }

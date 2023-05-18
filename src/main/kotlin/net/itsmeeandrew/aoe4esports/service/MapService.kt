@@ -6,7 +6,18 @@ import org.springframework.stereotype.Service
 
 @Service
 class MapService(private val mapRepository: MapRepository) {
-    fun findByName(name: String): GMap? = mapRepository.findByName(name)
+    fun findByName(name: String): GMap? {
+        return mapRepository.findByName(name)
+    }
 
-    fun add(map: GMap): GMap? = mapRepository.create(map)
+    fun create(map: GMap): GMap? {
+        if (map.name.isBlank()) {
+            return null
+        }
+        return mapRepository.create(map)
+    }
+
+    fun findByNameOrCreate(name: String): GMap? {
+        return findByName(name) ?: create(GMap(null, name))
+    }
 }

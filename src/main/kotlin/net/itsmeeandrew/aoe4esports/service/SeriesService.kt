@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 @Service
 class SeriesService(private val seriesRepository: SeriesRepository) {
     fun create(series: Series): Series? {
-        val existingSeries = findByDetails(series)
+        val existingSeries = find(series)
         return if (existingSeries == null) {
             seriesRepository.create(series)
         } else {
@@ -16,7 +16,11 @@ class SeriesService(private val seriesRepository: SeriesRepository) {
         }
     }
 
-    fun findByDetails(series: Series): Series? {
-        return seriesRepository.findByDetails(series.homePlayerId, series.awayPlayerId, series.tournamentRoundId, series.bracketRound)
+    fun find(series: Series): Series? {
+        return seriesRepository.find(series)
+    }
+
+    fun findOrCreate(series: Series): Series? {
+        return find(series) ?: create(series)
     }
 }

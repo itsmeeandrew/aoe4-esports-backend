@@ -42,7 +42,7 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
         }
     }
 
-    fun findByDetails(homePlayerId: Int, awayPlayerId: Int, tournamentRoundId: String, bracketRound: String): Series? {
+    fun find(series: Series): Series? {
         val sql = """
             SELECT * FROM Series
             WHERE home_player_id = ? AND
@@ -52,10 +52,10 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
         """.trimIndent()
 
         return jdbc.query(sql, PreparedStatementSetter { ps ->
-                ps.setInt(1, homePlayerId)
-                ps.setInt(2, awayPlayerId)
-                ps.setString(3, tournamentRoundId)
-                ps.setString(4, bracketRound)
+                ps.setInt(1, series.homePlayerId)
+                ps.setInt(2, series.awayPlayerId)
+                ps.setString(3, series.tournamentRoundId)
+                ps.setString(4, series.bracketRound)
             }, ResultSetExtractor { rs ->
                 if (rs.next()) {
                     Series(

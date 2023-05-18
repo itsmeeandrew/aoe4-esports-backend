@@ -1,6 +1,9 @@
 package net.itsmeeandrew.aoe4esports.client
 
-import net.itsmeeandrew.aoe4esports.model.*
+import net.itsmeeandrew.aoe4esports.model.Match
+import net.itsmeeandrew.aoe4esports.model.Series
+import net.itsmeeandrew.aoe4esports.model.Tournament
+import net.itsmeeandrew.aoe4esports.model.TournamentRound
 import net.itsmeeandrew.aoe4esports.service.CivilizationService
 import net.itsmeeandrew.aoe4esports.service.MapService
 import net.itsmeeandrew.aoe4esports.service.PlayerService
@@ -159,39 +162,15 @@ class LiquipediaParser(
             }
         }
 
-        private fun getPlayerIdByName(name: String): Int? {
-            if (name.isBlank()) return null
-
-            val existingPlayer = playerService.findByName(name)
-
-            return if (existingPlayer != null) {
-                existingPlayer.id
-            } else {
-                playerService.create(Player(null, name))?.id
-            }
-        }
-
         private fun getCivilizationIdByName(name: String): Int? {
             return civilizationService.findByName(name)?.id
-        }
-
-        private fun getMapIdByName(name: String?): Int? {
-            if (name.isNullOrBlank()) return null
-
-            val existingMap = mapService.findByName(name)
-
-            return if (existingMap != null) {
-                existingMap.id
-            } else {
-                mapService.add(GMap(null, name))?.id
-            }
         }
 
         fun parseSeriesAndMatches(): List<Pair<Series, List<Match>>> {
             return parseBracketSeriesAndMatches() + parseGroupSeriesAndMatches()
         }
 
-        // TODO: parseGroupSeriesAndMatch & parseBracketSeriesAndMatches have the same logic, only the rules differs. Find a way to make them work with only one function.
+        // TODO: parseGroupSeriesAndMatch & parseBracketSeriesAndMatches have similar logic, only the rules differs. Perhaps there is way to handle them in one function.
         private fun parseGroupSeriesAndMatches(): MutableList<Pair<Series, List<Match>>> {
            val listOfPairs = mutableListOf<Pair<Series, List<Match>>>()
 
@@ -215,8 +194,8 @@ class LiquipediaParser(
 
                            val bestOf = if (homeScore != null) homeScore.coerceAtLeast(awayScore) * 2 - 1 else 0
 
-                           val homePlayerId = getPlayerIdByName(homePlayerName)
-                           val awayPlayerId = getPlayerIdByName(awayPlayerName)
+                           val homePlayerId = playerService.findByNameOrCreate(homePlayerName)?.id
+                           val awayPlayerId = playerService.findByNameOrCreate(awayPlayerName)?.id
 
                            val groupMatchesList = mutableListOf<Match>()
                            val groupMatches = root.select("td:nth-child(2) .bracket-popup-body .bracket-popup-body-match")
@@ -230,7 +209,7 @@ class LiquipediaParser(
 
                                val homeCivilizationId = getCivilizationIdByName(homeCivilizationName)
                                val awayCivilizationId = getCivilizationIdByName(awayCivilizationName)
-                               val mapId = getMapIdByName(mapName)
+                               val mapId = if (mapName != null) mapService.findByNameOrCreate(mapName)?.id else null
 
                                val winnerPlayerId = when {
                                    isHomePlayerWinner -> homePlayerId
@@ -299,8 +278,8 @@ class LiquipediaParser(
                             val dateElement = series.select(".timer-object").first()
                             val (date, time) = getDateAndTime(dateElement)
 
-                            val homePlayerId = getPlayerIdByName(homePlayerName)
-                            val awayPlayerId = getPlayerIdByName(awayPlayerName)
+                            val homePlayerId = playerService.findByNameOrCreate(homePlayerName)?.id
+                            val awayPlayerId = playerService.findByNameOrCreate(awayPlayerName)?.id
 
                             val seriesMatchesList = mutableListOf<Match>()
                             val seriesMatches = series.select(".bracket-popup-body .bracket-popup-body-match")
@@ -314,7 +293,7 @@ class LiquipediaParser(
 
                                 val homeCivilizationId = getCivilizationIdByName(homeCivilizationName)
                                 val awayCivilizationId = getCivilizationIdByName(awayCivilizationName)
-                                val mapId = getMapIdByName(mapName)
+                                val mapId = if (mapName != null) mapService.findByNameOrCreate(mapName)?.id else null
 
                                 val winnerPlayerId = when {
                                     isHomePlayerWinner -> homePlayerId
