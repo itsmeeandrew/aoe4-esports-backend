@@ -1,4 +1,4 @@
-package net.itsmeeandrew.aoe4esports.util
+package net.itsmeeandrew.aoe4esports.common
 
 import org.jsoup.select.Elements
 

@@ -7,10 +7,10 @@ import net.itsmeeandrew.aoe4esports.model.TournamentRound
 import net.itsmeeandrew.aoe4esports.service.CivilizationService
 import net.itsmeeandrew.aoe4esports.service.MapService
 import net.itsmeeandrew.aoe4esports.service.PlayerService
-import net.itsmeeandrew.aoe4esports.util.TournamentFormat
-import net.itsmeeandrew.aoe4esports.util.TournamentTier
-import net.itsmeeandrew.aoe4esports.util.getText
-import net.itsmeeandrew.aoe4esports.util.liquipediaDateFormat
+import net.itsmeeandrew.aoe4esports.common.TournamentFormat
+import net.itsmeeandrew.aoe4esports.common.TournamentTier
+import net.itsmeeandrew.aoe4esports.common.getText
+import net.itsmeeandrew.aoe4esports.common.liquipediaDateFormat
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element

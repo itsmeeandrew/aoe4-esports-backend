@@ -1,7 +1,7 @@
 package net.itsmeeandrew.aoe4esports.model
 
-import net.itsmeeandrew.aoe4esports.util.TournamentFormat
-import net.itsmeeandrew.aoe4esports.util.TournamentTier
+import net.itsmeeandrew.aoe4esports.common.TournamentFormat
+import net.itsmeeandrew.aoe4esports.common.TournamentTier
 import java.time.LocalDate
 
 data class Tournament(

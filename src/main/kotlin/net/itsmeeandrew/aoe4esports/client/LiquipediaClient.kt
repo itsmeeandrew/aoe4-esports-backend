@@ -2,8 +2,8 @@ package net.itsmeeandrew.aoe4esports.client
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import net.itsmeeandrew.aoe4esports.common.TournamentTier
 import net.itsmeeandrew.aoe4esports.model.TournamentRound
-import net.itsmeeandrew.aoe4esports.util.TournamentTier
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder

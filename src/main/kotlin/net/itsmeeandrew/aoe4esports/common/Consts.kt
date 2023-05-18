@@ -1,4 +1,4 @@
-package net.itsmeeandrew.aoe4esports.util
+package net.itsmeeandrew.aoe4esports.common
 
 import java.time.format.DateTimeFormatter
 
@@ -24,4 +24,3 @@ enum class TournamentFormat(private val formatName: String) {
 }
 
 val liquipediaDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy")
-val defaultTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
