@@ -42,11 +42,6 @@ class Jobs(
                     matches.forEach { match ->
                         addMatch(match.copy(seriesId = createdSeries?.id))
                     }
-                } else {
-                    println("Series already exists for matches. -> Skipping matches.")
-                    matches.forEach { match ->
-                        addMatch(match.copy(seriesId = existingSeries.id))
-                    }
                 }
             }
         }
