@@ -95,7 +95,7 @@ class LiquipediaParser(
             }.toMutableList()
 
             tournamentRounds.add(TournamentRound(
-                "$tournamentId/Main/Event",
+                tournamentId,
                 "Main Event",
                 tournamentId
             ))
