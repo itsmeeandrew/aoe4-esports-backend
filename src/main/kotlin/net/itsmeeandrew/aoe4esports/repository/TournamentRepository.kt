@@ -1,6 +1,7 @@
 package net.itsmeeandrew.aoe4esports.repository
 
 import net.itsmeeandrew.aoe4esports.model.Tournament
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 
@@ -23,8 +24,12 @@ class TournamentRepository(private val jdbc: JdbcTemplate) {
                 ps.setString(8, tournament.tier.toString())
             }
             tournament
+        } catch (e: DuplicateKeyException) {
+            println("[TOURNAMENT REPOSITORY]: ${tournament.name} already exists.")
+            null
         } catch (e: Exception) {
-            println("Error while trying to create tournament. ${e.message}")
+            println("[TOURNAMENT REPOSITORY]: Error while trying to create tournament. ${e.message}")
+            println("Exception name: ${e.javaClass.canonicalName}")
             null
         }
     }

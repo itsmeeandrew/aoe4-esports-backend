@@ -22,8 +22,8 @@ class MatchRepository(private val jdbc: JdbcTemplate) {
                 ps.setObject(1, match.mapId, Types.INTEGER)
                 ps.setObject(2, match.winnerPlayerId, Types.INTEGER)
                 ps.setObject(3, match.seriesId, Types.INTEGER)
-                ps.setInt(4, match.homeCivilizationId)
-                ps.setInt(5, match.awayCivilizationId)
+                ps.setObject(4, match.homeCivilizationId)
+                ps.setObject(5, match.awayCivilizationId)
                 ps
             }, keyHolder)
 

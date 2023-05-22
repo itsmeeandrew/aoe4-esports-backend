@@ -3,6 +3,7 @@ package net.itsmeeandrew.aoe4esports.client
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.itsmeeandrew.aoe4esports.common.TournamentTier
+import net.itsmeeandrew.aoe4esports.common.timeout
 import net.itsmeeandrew.aoe4esports.model.TournamentRound
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -33,8 +34,8 @@ class LiquipediaClient(
     }
 
     private fun toJson(str: String?): JsonNode {
-        println("Pausing for 2s before another call.")
-        Thread.sleep(2000)
+        println("Pausing for 35s before making another call.")
+        timeout(35)
         return ObjectMapper().readTree(str ?: " ")
     }
 

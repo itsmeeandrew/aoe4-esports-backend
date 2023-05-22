@@ -2,6 +2,9 @@ package net.itsmeeandrew.aoe4esports.jobs
 
 import jakarta.annotation.PostConstruct
 import net.itsmeeandrew.aoe4esports.client.LiquipediaClient
+import net.itsmeeandrew.aoe4esports.common.TournamentFormat
+import net.itsmeeandrew.aoe4esports.common.TournamentTier
+import net.itsmeeandrew.aoe4esports.common.timeout
 import net.itsmeeandrew.aoe4esports.model.Match
 import net.itsmeeandrew.aoe4esports.model.Series
 import net.itsmeeandrew.aoe4esports.model.Tournament
@@ -23,26 +26,37 @@ class Jobs(
 
     @PostConstruct
     fun init() {
-        val tournamentParser = liquipediaClient.getTournamentParser("GENESIS")
-        val tournament = tournamentParser.parseTournament()
-        addTournament(tournament)
+        timeout(35)
 
-        val tournamentRounds = tournamentParser.parseTournamentRounds()
+        val sTierTournamentIds = liquipediaClient.getTournamentIds(TournamentTier.S)
+        sTierTournamentIds.forEach { tid ->
+            val tournamentParser = liquipediaClient.getTournamentParser(tid)
+            val tournament = tournamentParser.parseTournament()
 
-        tournamentRounds.forEach { tr ->
-            addTournamentRound(tr)
+            if (tournament.format == TournamentFormat.ONE_VS_ONE) {
+                addTournament(tournament)
+                val tournamentRounds = tournamentParser.parseTournamentRounds()
 
-            val tournamentRoundParser = liquipediaClient.getTournamentRoundParser(tr)
-            val seriesAndMatches = tournamentRoundParser.parseSeriesAndMatches()
-            seriesAndMatches.forEach { (series, matches) ->
-                val existingSeries = seriesService.find(series)
-                if (existingSeries == null) {
-                    println("Series created for matches.")
-                    val createdSeries = addSeries(series)
-                    matches.forEach { match ->
-                        addMatch(match.copy(seriesId = createdSeries?.id))
+                tournamentRounds.forEach { tr ->
+                    addTournamentRound(tr)
+
+                    val tournamentRoundParser = liquipediaClient.getTournamentRoundParser(tr)
+                    val seriesAndMatches = tournamentRoundParser.parseSeriesAndMatches()
+                    seriesAndMatches.forEach { (series, matches) ->
+                        val existingSeries = seriesService.find(series)
+                        if (existingSeries == null) {
+                            println("[TOURNAMENT ROUND] ${tr.name} [SERIES] Added series.")
+                            val createdSeries = addSeries(series)
+                            matches.forEach { match ->
+                                addMatch(match.copy(seriesId = createdSeries?.id))
+                            }
+                        } else {
+                            println("[TOURNAMENT ROUND] ${tr.name} [SERIES] Series already exists.")
+                        }
                     }
                 }
+            } else {
+                println("[TOURNAMENT] ${tournament.name} has unsupported format. (${tournament.format.name})")
             }
         }
     }
@@ -50,14 +64,14 @@ class Jobs(
     private fun addTournament(tournament: Tournament) {
         val createdTournament = tournamentService.create(tournament)
         if (createdTournament != null) {
-            println("Added tournament: ${createdTournament.name}")
+            println("[TOURNAMENT] Added tournament ${tournament.name}.")
         }
     }
 
     private fun addTournamentRound(tournamentRound: TournamentRound) {
         val createdTournamentRound = tournamentRoundService.create(tournamentRound)
         if (createdTournamentRound != null) {
-            println("Added tournament round: ${createdTournamentRound.name}")
+            println("[TOURNAMENT ROUND] Added tournament round ${tournamentRound.name}.")
         }
     }
 
@@ -68,7 +82,7 @@ class Jobs(
     private fun addMatch(match: Match) {
         val createdMatch = matchService.create(match)
         if (createdMatch != null) {
-            println("Added match: ${createdMatch.id}")
+            println("[MATCH] Added match.")
         }
     }
 }

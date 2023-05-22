@@ -6,8 +6,8 @@ import java.time.LocalTime
 data class Series(
     val awayPlayerId: Int,
     val awayScore: Int,
-    val bestOf: Int,
-    val bracketRound: String,
+    val bestOf: Int?,
+    val bracketRound: String?,
     val date: LocalDate?,
     val id: Int?,
     val homePlayerId: Int,

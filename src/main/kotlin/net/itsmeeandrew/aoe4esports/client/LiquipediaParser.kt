@@ -1,9 +1,6 @@
 package net.itsmeeandrew.aoe4esports.client
 
-import net.itsmeeandrew.aoe4esports.common.TournamentFormat
-import net.itsmeeandrew.aoe4esports.common.TournamentTier
-import net.itsmeeandrew.aoe4esports.common.getText
-import net.itsmeeandrew.aoe4esports.common.liquipediaDateFormat
+import net.itsmeeandrew.aoe4esports.common.*
 import net.itsmeeandrew.aoe4esports.model.Match
 import net.itsmeeandrew.aoe4esports.model.Series
 import net.itsmeeandrew.aoe4esports.model.Tournament
@@ -113,14 +110,13 @@ class LiquipediaParser(
     ) {
         private val root: Document = cleanAndParseHtmlString(htmlString)
 
-        private fun isValidBracketGame(seriesElement: Element) =
-            seriesElement.select(".bracket-player-middle").isEmpty() && seriesElement.select(".timer-object").isNotEmpty()
-
-        private fun getPlayerSelectorPrefix(seriesElement: Element) =
-            if (seriesElement.select(".bracket-player-top").isEmpty()) ".bracket-team"
+        private fun getBracketPlayerSelectorPrefix() =
+            if (root.select(".bracket-player-top").isEmpty()) ".bracket-team"
             else ".bracket-player"
 
-        private fun getDateAndTime(dateElement: Element?): Pair<LocalDate?, LocalTime?> {
+        private fun getDateAndTime(seriesElement: Element, dateElementSelector: String): Pair<LocalDate?, LocalTime?> {
+            val dateElement = seriesElement.select(dateElementSelector).first()
+
             if (dateElement != null) {
                 if (isFullDate(dateElement)) {
                     val secondsSinceEpoch = dateElement.attr("data-timestamp").toLong()
@@ -162,146 +158,112 @@ class LiquipediaParser(
             }
         }
 
-        private fun getCivilizationIdByName(name: String): Int? {
-            return civilizationService.findByName(name)?.id
+        private fun getMatchMapId(matchElement: Element, mapSelector: String): Int? {
+            val mapName = matchElement.select(mapSelector).getOwnText()
+            return if (mapName != null) {
+                mapService.findByNameOrCreate(mapName)?.id
+            } else null
+        }
+
+        private fun getMatchWinnerPlayerId(matchElement: Element, homePlayerId: Int?, awayPlayerId: Int?): Int? {
+            return try {
+                val isHomePlayerWinner = matchElement.select("div > div > i")[0].classNames().contains("forest-green-text")
+                val isAwayPlayerWinner = matchElement.select("div > div > i")[1].classNames().contains("forest-green-text")
+
+                when {
+                    isHomePlayerWinner -> homePlayerId
+                    isAwayPlayerWinner -> awayPlayerId
+                    else -> null
+                }
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        private fun calculateBestOf(homeScore: Int?, awayScore: Int?): Int? {
+            return if (homeScore != null && awayScore != null) {
+                homeScore.coerceAtLeast(awayScore) * 2 - 1
+            } else null
+        }
+
+        private fun getRoundName(containerElement: Element, containerSelector: String, defaultHeaderText: String): String {
+            return containerElement.select(containerSelector).getText() ?: defaultHeaderText
+        }
+
+        private fun getSeriesPlayerIds(seriesElement: Element, homePlayerSelector: String, awayPlayerSelector: String): Pair<Int?, Int?> {
+            val homePlayerName = seriesElement.select(homePlayerSelector).getOwnText()
+            val awayPlayerName = seriesElement.select(awayPlayerSelector).getOwnText()
+
+            return if (homePlayerName != null && awayPlayerName != null) {
+                Pair(
+                    playerService.findByNameOrCreate(homePlayerName)?.id,
+                    playerService.findByNameOrCreate(awayPlayerName)?.id
+                )
+            } else {
+                Pair(null, null)
+            }
+        }
+
+        private fun getSeriesScores(seriesElement: Element, homeScoreSelector: String, awayScoreSelector: String): Pair<Int?, Int?> {
+            val homeScoreString = seriesElement.select(homeScoreSelector).getOwnText()
+            val awayScoreString = seriesElement.select(awayScoreSelector).getText()
+
+            return if (homeScoreString == "W" && awayScoreString == "FF") {
+                Pair(0, -1)
+            }
+            else if (homeScoreString == "FF" && awayScoreString == "W") {
+                Pair(-1, 0)
+            }
+            else {
+                Pair(
+                    homeScoreString?.toIntOrNull(),
+                    awayScoreString?.toIntOrNull()
+                )
+            }
+        }
+
+        private fun getMatchCivilizationIds(matchElement: Element, homeCivilizationSelector: String, awayCivilizationSelector: String): Pair<Int?, Int?> {
+            return try {
+                val homeCivilizationName = matchElement.select(homeCivilizationSelector)[0].attr("title")
+                val awayCivilizationName = matchElement.select(awayCivilizationSelector)[1].attr("title")
+
+                val homeCivilizationId = civilizationService.findByName(homeCivilizationName)?.id
+                val awayCivilizationId = civilizationService.findByName(awayCivilizationName)?.id
+
+                Pair(homeCivilizationId, awayCivilizationId)
+            } catch (e: Exception) {
+                Pair(null, null)
+            }
         }
 
         fun parseSeriesAndMatches(): List<Pair<Series, List<Match>>> {
-            return parseBracketSeriesAndMatches() + parseGroupSeriesAndMatches()
+            return getSeriesAndMatches(BracketSelector(getBracketPlayerSelectorPrefix())) + getSeriesAndMatches(GroupSelector())
         }
 
-        // TODO: parseGroupSeriesAndMatch & parseBracketSeriesAndMatches have similar logic, only the rules differs. Perhaps there is way to handle them in one function.
-        private fun parseGroupSeriesAndMatches(): MutableList<Pair<Series, List<Match>>> {
-           val listOfPairs = mutableListOf<Pair<Series, List<Match>>>()
-
-           root.select(".template-box")
-               .filter { gbe ->
-                   gbe.select(".wikitable").isNotEmpty() && gbe.select(".matchlist").isNotEmpty()
-               }
-               .forEach { gbe ->
-                   val groupNameElement = gbe.select("div table.grouptable tbody tr:first-child th span").firstOrNull()
-                   val groupName = groupNameElement?.text() ?: "Group Stage"
-
-                   gbe.select("tr.match-row")
-                       .forEach { series ->
-                           val homePlayerName = series.select("td:first-child").getText()
-                           val homeScore = series.select("td:nth-child(2)").firstOrNull()?.ownText()?.trim()?.toInt()
-                           val awayPlayerName = series.select("td:nth-child(4)").getText()
-                           val awayScore = series.select("td:nth-child(3)").getText().toInt()
-
-                           val dateElement = series.select("td:nth-child(2) .timer-object").firstOrNull()
-                           val (date, time) = getDateAndTime(dateElement)
-
-                           val bestOf = if (homeScore != null) homeScore.coerceAtLeast(awayScore) * 2 - 1 else 0
-
-                           val homePlayerId = playerService.findByNameOrCreate(homePlayerName)?.id
-                           val awayPlayerId = playerService.findByNameOrCreate(awayPlayerName)?.id
-
-                           val groupMatchesList = mutableListOf<Match>()
-                           val groupMatches = root.select("td:nth-child(2) .bracket-popup-body .bracket-popup-body-match")
-                           groupMatches.forEach { match ->
-                               val homeCivilizationName = match.select("div .draft a")[0].attr("title")
-                               val awayCivilizationName = match.select("div .draft a")[1].attr("title")
-                               val mapName = match.select("> div > a").firstOrNull()?.ownText()
-
-                               val isHomePlayerWinner = match.select("div > div > i").firstOrNull()?.classNames()?.contains("forest-green-text") ?: false
-                               val isAwayPlayerWinner = match.select("div > div > i")[1].classNames().contains("forest-green-text")
-
-                               val homeCivilizationId = getCivilizationIdByName(homeCivilizationName)
-                               val awayCivilizationId = getCivilizationIdByName(awayCivilizationName)
-                               val mapId = if (mapName != null) mapService.findByNameOrCreate(mapName)?.id else null
-
-                               val winnerPlayerId = when {
-                                   isHomePlayerWinner -> homePlayerId
-                                   isAwayPlayerWinner -> awayPlayerId
-                                   else -> null
-                               }
-
-                               if (homeCivilizationId != null && awayCivilizationId != null) {
-                                   groupMatchesList.add(
-                                       Match(
-                                           awayCivilizationId = awayCivilizationId,
-                                           homeCivilizationId = homeCivilizationId,
-                                           id = null,
-                                           mapId = mapId,
-                                           seriesId = null,
-                                           winnerPlayerId = winnerPlayerId
-                                       )
-                                   )
-                               } else {
-                                   println("Skipping group match because of missing information.")
-                               }
-                           }
-
-                           if (homePlayerId != null && awayPlayerId != null && homeScore != null) {
-                               val newSeries = Series(
-                                   awayPlayerId = awayPlayerId,
-                                   awayScore = awayScore,
-                                   bestOf = bestOf,
-                                   bracketRound = groupName,
-                                   date = date,
-                                   id = null,
-                                   homePlayerId = homePlayerId,
-                                   homeScore = homeScore,
-                                   time = time,
-                                   tournamentRoundId = tournamentRound.id
-                               )
-                               listOfPairs.add(Pair(newSeries, groupMatchesList))
-                           } else {
-                               println("Skipping group Series because of missing Id")
-                           }
-                       }
-               }
-           return listOfPairs
-        }
-
-        private fun parseBracketSeriesAndMatches(): List<Pair<Series, List<Match>>> {
+        private fun getSeriesAndMatches(selector: Selector): List<Pair<Series, List<Match>>> {
             val listOfPairs = mutableListOf<Pair<Series, List<Match>>>()
 
-            root.select(".bracket-column.bracket-column-matches")
-                .filter { bce -> bce.select(".bracket-header").isNotEmpty() }
-                .forEach { bce ->
-                    val bracketHeaderText = bce.select(".bracket-header").getText().split("(")
-                    val bracketRound = bracketHeaderText[0]
-                    val bracketBestOf = if (bracketHeaderText.size == 2) bracketHeaderText[1].replace("[^0-9]".toRegex(), "") else ""
+            root.select(selector.container)
+                .filter { container -> selector.containerFilter(container) }
+                .forEach { container ->
+                    val bracketRoundName = getRoundName(container, selector.header, selector.defaultHeaderText)
 
-                    bce.select(".bracket-game")
-                        .filter { series -> isValidBracketGame(series) }
-                        .mapNotNull { series ->
-                            val playerSelectorPrefix = getPlayerSelectorPrefix(series)
-
-                            val homePlayerName = series.select("${playerSelectorPrefix}-top span:nth-child(2)").getText()
-                            val awayPlayerName = series.select("${playerSelectorPrefix}-bottom span:nth-child(2)").getText()
-                            val homeScore = series.select("${playerSelectorPrefix}-top .bracket-score").getText()
-                            val awayScore = series.select("${playerSelectorPrefix}-bottom .bracket-score").getText()
-
-                            val dateElement = series.select(".timer-object").first()
-                            val (date, time) = getDateAndTime(dateElement)
-
-                            val homePlayerId = playerService.findByNameOrCreate(homePlayerName)?.id
-                            val awayPlayerId = playerService.findByNameOrCreate(awayPlayerName)?.id
+                    container.select(selector.series)
+                        .filter { series -> selector.seriesFilter(series) }
+                        .forEach { series ->
+                            val (homePlayerId, awayPlayerId) = getSeriesPlayerIds(series, selector.homePlayer, selector.awayPlayer)
+                            val (homeScore, awayScore) = getSeriesScores(series, selector.homeScore, selector.awayScore)
+                            val (date, time) = getDateAndTime(series, selector.dateElement)
+                            val bestOf = calculateBestOf(homeScore, awayScore)
 
                             val seriesMatchesList = mutableListOf<Match>()
-                            val seriesMatches = series.select(".bracket-popup-body .bracket-popup-body-match")
+                            val seriesMatches = series.select(selector.matches)
                             seriesMatches.forEach { match ->
-                                val homeCivilizationName = match.select("div .draft a")[0].attr("title")
-                                val awayCivilizationName = match.select("div .draft a")[1].attr("title")
-                                val mapName = match.select("> div > a").firstOrNull()?.ownText()
+                                val (homeCivilizationId, awayCivilizationId) = getMatchCivilizationIds(match, selector.homeCivilization, selector.awayCivilization)
+                                val mapId = getMatchMapId(match, selector.map)
+                                val winnerPlayerId = getMatchWinnerPlayerId(match, homePlayerId, awayPlayerId)
 
-                                val isHomePlayerWinner = match.select("div > div > i").firstOrNull()?.classNames()?.contains("forest-green-text") ?: false
-                                val isAwayPlayerWinner = match.select("div > div > i")[1].classNames().contains("forest-green-text")
-
-                                val homeCivilizationId = getCivilizationIdByName(homeCivilizationName)
-                                val awayCivilizationId = getCivilizationIdByName(awayCivilizationName)
-                                val mapId = if (mapName != null) mapService.findByNameOrCreate(mapName)?.id else null
-
-                                val winnerPlayerId = when {
-                                    isHomePlayerWinner -> homePlayerId
-                                    isAwayPlayerWinner -> awayPlayerId
-                                    else -> null
-                                }
-
-                                if (homeCivilizationId != null && awayCivilizationId != null) {
+                                if (winnerPlayerId != null) {
                                     seriesMatchesList.add(
                                         Match(
                                             awayCivilizationId = awayCivilizationId,
@@ -312,27 +274,27 @@ class LiquipediaParser(
                                             winnerPlayerId = winnerPlayerId
                                         )
                                     )
-                                } else {
-                                    println("Skipping match because of missing information.")
+                                } else if (homeCivilizationId != null && awayCivilizationId != null && mapId != null) {
+                                    println("[MATCH ERROR]: Missing winner player ID. (homePlayerId: $homePlayerId awayPlayerId: $awayPlayerId)")
                                 }
                             }
 
-                            if (homePlayerId != null && awayPlayerId != null) {
+                            if (homePlayerId != null && awayPlayerId != null && homeScore != null && awayScore != null) {
                                 val newSeries = Series(
                                     awayPlayerId = awayPlayerId,
-                                    awayScore = awayScore.toInt(),
-                                    bestOf = bracketBestOf.toInt(),
-                                    bracketRound = bracketRound,
+                                    awayScore = awayScore,
+                                    bestOf = bestOf,
+                                    bracketRound = bracketRoundName,
                                     date = date,
                                     id = null,
                                     homePlayerId = homePlayerId,
-                                    homeScore = homeScore.toInt(),
+                                    homeScore = homeScore,
                                     time = time,
                                     tournamentRoundId = tournamentRound.id
                                 )
                                 listOfPairs.add(Pair(newSeries, seriesMatchesList))
                             } else {
-                                println("Skipping bracket Series because of missing ID.")
+                                println("[SERIES ERROR]: Missing Player ID or score. (home: $homePlayerId away:$awayPlayerId $homeScore - $awayScore)")
                             }
                     }
             }

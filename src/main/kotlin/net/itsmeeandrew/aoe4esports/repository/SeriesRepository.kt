@@ -28,7 +28,7 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
                 ps.setInt(4, series.awayScore)
                 ps.setObject(5, series.date)
                 ps.setObject(6, series.time)
-                ps.setInt(7, series.bestOf)
+                ps.setObject(7, series.bestOf)
                 ps.setString(8, series.bracketRound)
                 ps.setString(9, series.tournamentRoundId)
                 ps
