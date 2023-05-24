@@ -1,13 +1,11 @@
 package net.itsmeeandrew.aoe4esports.client
 
 import net.itsmeeandrew.aoe4esports.common.*
-import net.itsmeeandrew.aoe4esports.model.Match
-import net.itsmeeandrew.aoe4esports.model.Series
-import net.itsmeeandrew.aoe4esports.model.Tournament
-import net.itsmeeandrew.aoe4esports.model.TournamentRound
+import net.itsmeeandrew.aoe4esports.model.*
 import net.itsmeeandrew.aoe4esports.service.CivilizationService
 import net.itsmeeandrew.aoe4esports.service.MapService
 import net.itsmeeandrew.aoe4esports.service.PlayerService
+import net.itsmeeandrew.aoe4esports.service.TournamentRoundPhaseService
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -19,6 +17,7 @@ class LiquipediaParser(
     private val civilizationService: CivilizationService,
     private val mapService: MapService,
     private val playerService: PlayerService,
+    private val tournamentRoundPhaseService: TournamentRoundPhaseService
 ) {
 
     private fun cleanAndParseHtmlString(htmlString: String): Document {
@@ -186,8 +185,14 @@ class LiquipediaParser(
             } else null
         }
 
-        private fun getRoundName(containerElement: Element, containerSelector: String, defaultHeaderText: String): String {
-            return containerElement.select(containerSelector).getText() ?: defaultHeaderText
+        private fun getTournamentRoundPhase(containerElement: Element, containerSelector: String, defaultHeaderText: String): TournamentRoundPhase? {
+            val phaseName = containerElement.select(containerSelector).getText() ?: defaultHeaderText
+            return tournamentRoundPhaseService.findOrCreate(TournamentRoundPhase(
+                id = null,
+                name = phaseName,
+                bestOf = null,
+                tournamentRoundId = tournamentRound.id
+            ))
         }
 
         private fun getSeriesPlayerIds(seriesElement: Element, homePlayerSelector: String, awayPlayerSelector: String): Pair<Int?, Int?> {
@@ -246,7 +251,8 @@ class LiquipediaParser(
             root.select(selector.container)
                 .filter { container -> selector.containerFilter(container) }
                 .forEach { container ->
-                    val bracketRoundName = getRoundName(container, selector.header, selector.defaultHeaderText)
+                    val tournamentRoundPhase = getTournamentRoundPhase(container, selector.header, selector.defaultHeaderText)
+                    val bestOfList = mutableListOf<Int>()
 
                     container.select(selector.series)
                         .filter { series -> selector.seriesFilter(series) }
@@ -254,7 +260,24 @@ class LiquipediaParser(
                             val (homePlayerId, awayPlayerId) = getSeriesPlayerIds(series, selector.homePlayer, selector.awayPlayer)
                             val (homeScore, awayScore) = getSeriesScores(series, selector.homeScore, selector.awayScore)
                             val (date, time) = getDateAndTime(series, selector.dateElement)
+
                             val bestOf = calculateBestOf(homeScore, awayScore)
+                            val uniqueRoundPhaseName = selector.uniqueHeader(series)
+                            var uniqueRoundPhase: TournamentRoundPhase? = null
+
+                            if (uniqueRoundPhaseName != null) {
+                                uniqueRoundPhase = tournamentRoundPhaseService.create(
+                                    TournamentRoundPhase(
+                                        id = null,
+                                        name = uniqueRoundPhaseName,
+                                        bestOf = bestOf,
+                                        tournamentRoundId = tournamentRound.id
+                                    )
+                                )
+                            }
+                            else if (homeScore != -1 && awayScore != -1 && bestOf != null) {
+                                bestOfList.add(bestOf)
+                            }
 
                             val seriesMatchesList = mutableListOf<Match>()
                             val seriesMatches = series.select(selector.matches)
@@ -279,23 +302,33 @@ class LiquipediaParser(
                                 }
                             }
 
-                            if (homePlayerId != null && awayPlayerId != null && homeScore != null && awayScore != null) {
+                            if (homePlayerId != null && awayPlayerId != null && homeScore != null && awayScore != null && tournamentRoundPhase?.id != null) {
                                 val newSeries = Series(
                                     awayPlayerId = awayPlayerId,
                                     awayScore = awayScore,
-                                    bestOf = bestOf,
-                                    bracketRound = bracketRoundName,
                                     date = date,
                                     id = null,
                                     homePlayerId = homePlayerId,
                                     homeScore = homeScore,
                                     time = time,
-                                    tournamentRoundId = tournamentRound.id
+                                    tournamentRoundId = tournamentRound.id,
+                                    tournamentRoundPhaseId = uniqueRoundPhase?.id ?: tournamentRoundPhase.id
                                 )
                                 listOfPairs.add(Pair(newSeries, seriesMatchesList))
                             } else {
-                                println("[SERIES ERROR]: Missing Player ID or score. (home: $homePlayerId away:$awayPlayerId $homeScore - $awayScore)")
+                                println("[SERIES ERROR]: Missing information. (home: $homePlayerId away:$awayPlayerId $homeScore - $awayScore)")
                             }
+                    }
+
+                    val bestOfSet = bestOfList.toSet()
+                    if (bestOfSet.size == 1 && tournamentRoundPhase?.id != null) {
+                        tournamentRoundPhaseService.updateBestOf(tournamentRoundPhase.id, bestOfSet.elementAt(0))
+                    }
+                    else if (tournamentRoundPhase?.id == null) {
+                        println("Could not update tournament round phase best of value, because it's null.")
+                    }
+                    else {
+                        println("Could not determine bestOf value for tournament round phase. Number of best of values found: ${bestOfSet.size}")
                     }
             }
 

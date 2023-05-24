@@ -14,8 +14,8 @@ import java.time.LocalTime
 class SeriesRepository(private val jdbc: JdbcTemplate) {
     fun create(series: Series): Series? {
         val sql = """
-            INSERT INTO Series (home_player_id, home_score, away_player_id, away_score, date, time, best_of, bracket_round, tournament_round_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Series
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """.trimIndent()
         val keyHolder = GeneratedKeyHolder()
 
@@ -23,14 +23,13 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
             jdbc.update({ connection ->
                 val ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
                 ps.setInt(1, series.homePlayerId)
-                ps.setInt(2, series.homeScore)
-                ps.setInt(3, series.awayPlayerId)
+                ps.setInt(2, series.awayPlayerId)
+                ps.setInt(3, series.homeScore)
                 ps.setInt(4, series.awayScore)
                 ps.setObject(5, series.date)
-                ps.setObject(6, series.time)
-                ps.setObject(7, series.bestOf)
-                ps.setString(8, series.bracketRound)
-                ps.setString(9, series.tournamentRoundId)
+                ps.setObject(6,series.time)
+                ps.setString(7, series.tournamentRoundId)
+                ps.setInt(8, series.tournamentRoundPhaseId)
                 ps
             }, keyHolder)
 
@@ -48,28 +47,26 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
             WHERE home_player_id = ? AND
             away_player_id = ? AND
             tournament_round_id = ? AND
-            bracket_round = ?
+            tournament_round_phase_id = ?
         """.trimIndent()
 
         return jdbc.query(sql, PreparedStatementSetter { ps ->
                 ps.setInt(1, series.homePlayerId)
                 ps.setInt(2, series.awayPlayerId)
                 ps.setString(3, series.tournamentRoundId)
-                ps.setString(4, series.bracketRound)
+                ps.setInt(4, series.tournamentRoundPhaseId)
             }, ResultSetExtractor { rs ->
                 if (rs.next()) {
                     Series(
                         awayPlayerId = rs.getInt("away_player_id"),
                         awayScore = rs.getInt("away_score"),
-                        bestOf = rs.getInt("best_of"),
-                        bracketRound = rs.getString("bracket_round"),
                         date = rs.getObject("date", LocalDate::class.java),
                         id = rs.getInt("id"),
                         homePlayerId = rs.getInt("home_player_id"),
                         homeScore = rs.getInt("home_score"),
                         time = rs.getObject("time", LocalTime::class.java),
-                        tournamentRoundId = rs.getString("tournament_round_id")
-
+                        tournamentRoundId = rs.getString("tournament_round_id"),
+                        tournamentRoundPhaseId = rs.getInt("tournament_round_phase_id")
                     )
                 } else null
         })

@@ -16,6 +16,7 @@ class SeriesService(private val seriesRepository: SeriesRepository) {
         }
     }
 
+    // TODO: Rename to findOne
     fun find(series: Series): Series? {
         return seriesRepository.find(series)
     }

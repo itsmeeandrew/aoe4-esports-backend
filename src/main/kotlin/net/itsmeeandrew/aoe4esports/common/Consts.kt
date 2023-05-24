@@ -30,6 +30,7 @@ interface Selector {
     val container: String
     fun containerFilter(e: Element): Boolean
     val header: String
+    fun uniqueHeader(e: Element): String?
     val defaultHeaderText: String
     val series: String
     fun seriesFilter(e: Element): Boolean
@@ -47,11 +48,23 @@ interface Selector {
 }
 
 class BracketSelector (
-    playerSelectorPrefix: String
+    private val playerSelectorPrefix: String
 ): Selector {
     override val container = ".bracket-column.bracket-column-matches"
-    override fun containerFilter (e: Element) = e.select(".bracket-header").isNotEmpty()
+    override fun containerFilter (e: Element) = e.select(".bracket-header").isNotEmpty() && e.select(".bracket-game ${playerSelectorPrefix}-top").isNotEmpty()
     override val header = ".bracket-header"
+    override fun uniqueHeader(e: Element): String? {
+        val previousElement = e.previousElementSibling()
+        return if (previousElement == null) {
+            null
+        } else {
+            if (!previousElement.hasClass("bracket-game") &&
+                previousElement.select("abbr").firstOrNull()?.attr("title")?.startsWith("Best of") == true &&
+                previousElement.select(".bracket-header").isEmpty()) {
+                previousElement.text()
+            } else null
+        }
+    }
     override val defaultHeaderText = "Bracket Stage"
     override val series = ".bracket-game"
     override fun seriesFilter(e: Element) = e.select(".bracket-player-middle").isEmpty() && e.select(".timer-object").isNotEmpty()
@@ -72,6 +85,7 @@ class GroupSelector: Selector {
     override val container = ".template-box"
     override fun containerFilter (e: Element) = e.select(".wikitable").isNotEmpty() && e.select(".matchlist").isNotEmpty()
     override val header = "div table.grouptable tbody tr:first-child th span"
+    override fun uniqueHeader(e: Element) = null
     override val defaultHeaderText = "Group Stage"
     override val series = "tr.match-row"
     override fun seriesFilter(e: Element) = true

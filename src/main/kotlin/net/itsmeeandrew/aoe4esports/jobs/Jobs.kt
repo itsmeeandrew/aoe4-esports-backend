@@ -3,7 +3,6 @@ package net.itsmeeandrew.aoe4esports.jobs
 import jakarta.annotation.PostConstruct
 import net.itsmeeandrew.aoe4esports.client.LiquipediaClient
 import net.itsmeeandrew.aoe4esports.common.TournamentFormat
-import net.itsmeeandrew.aoe4esports.common.TournamentTier
 import net.itsmeeandrew.aoe4esports.common.timeout
 import net.itsmeeandrew.aoe4esports.model.Match
 import net.itsmeeandrew.aoe4esports.model.Series
@@ -28,8 +27,8 @@ class Jobs(
     fun init() {
         timeout(35)
 
-        val sTierTournamentIds = liquipediaClient.getTournamentIds(TournamentTier.S)
-        sTierTournamentIds.forEach { tid ->
+        //val sTierTournamentIds = liquipediaClient.getTournamentIds(TournamentTier.S)
+        listOf("Golden_League/1").forEach { tid ->
             val tournamentParser = liquipediaClient.getTournamentParser(tid)
             val tournament = tournamentParser.parseTournament()
 
