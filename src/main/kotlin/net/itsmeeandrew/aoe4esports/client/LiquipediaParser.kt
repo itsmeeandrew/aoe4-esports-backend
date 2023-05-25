@@ -122,9 +122,22 @@ class LiquipediaParser(
                     val timezoneId = dateElement.select("span abbr").text()
                     val instant = Instant.ofEpochSecond(secondsSinceEpoch)
 
-                    val dateTimeInUTC = ZonedDateTime.ofInstant(instant, ZoneId.of(timezoneId)).withZoneSameInstant(ZoneOffset.UTC)
+                    var zoneId: ZoneId? = null
+                    try {
+                        zoneId = ZoneId.of(timezoneId)
+                    } catch (e: Exception) {
+                        if (timezoneId == "BOT") {
+                            zoneId = ZoneId.of("America/La_Paz")
+                        }
+                    }
 
-                    return Pair(dateTimeInUTC.toLocalDate(), dateTimeInUTC.toLocalTime())
+                    return if (zoneId != null) {
+                        val dateTimeInUTC = ZonedDateTime.ofInstant(instant, zoneId).withZoneSameInstant(ZoneOffset.UTC)
+
+                        Pair(dateTimeInUTC.toLocalDate(), dateTimeInUTC.toLocalTime())
+                    } else {
+                        Pair(null, null)
+                    }
                 }
                 else if (isPartialDate(dateElement)) {
                     val dateString = dateElement.text()

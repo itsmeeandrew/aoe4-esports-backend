@@ -27,8 +27,8 @@ class Jobs(
     fun init() {
         timeout(35)
 
-        //val sTierTournamentIds = liquipediaClient.getTournamentIds(TournamentTier.S)
-        listOf("Golden_League/1").forEach { tid ->
+        // val sTierTournamentIds = liquipediaClient.getTournamentIds(TournamentTier.S)
+        listOf("SteelSeries_Prime_Cup", "GENESIS").forEach { tid ->
             val tournamentParser = liquipediaClient.getTournamentParser(tid)
             val tournament = tournamentParser.parseTournament()
 
