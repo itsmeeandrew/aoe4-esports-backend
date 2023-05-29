@@ -6,6 +6,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class TournamentService(private val tournamentRepository: TournamentRepository) {
+    fun findAll(): List<Tournament> {
+        return tournamentRepository.findAll()
+    }
+
     fun create(t: Tournament): Tournament? {
         return tournamentRepository.create(t)
     }

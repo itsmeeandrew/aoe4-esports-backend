@@ -200,12 +200,14 @@ class LiquipediaParser(
 
         private fun getTournamentRoundPhase(containerElement: Element, containerSelector: String, defaultHeaderText: String): TournamentRoundPhase? {
             val phaseName = containerElement.select(containerSelector).getText() ?: defaultHeaderText
-            return tournamentRoundPhaseService.findOrCreate(TournamentRoundPhase(
-                id = null,
-                name = phaseName,
-                bestOf = null,
-                tournamentRoundId = tournamentRound.id
-            ))
+            return tournamentRoundPhaseService.findOrCreate(
+                TournamentRoundPhase(
+                    id = null,
+                    name = phaseName,
+                    bestOf = null,
+                    tournamentRoundId = tournamentRound.id
+                )
+            )
         }
 
         private fun getSeriesPlayerIds(seriesElement: Element, homePlayerSelector: String, awayPlayerSelector: String): Pair<Int?, Int?> {
@@ -271,7 +273,7 @@ class LiquipediaParser(
                         .filter { series -> selector.seriesFilter(series) }
                         .forEach { series ->
                             val (homePlayerId, awayPlayerId) = getSeriesPlayerIds(series, selector.homePlayer, selector.awayPlayer)
-                            val (homeScore, awayScore) = getSeriesScores(series, selector.homeScore, selector.awayScore)
+                            var (homeScore, awayScore) = getSeriesScores(series, selector.homeScore, selector.awayScore)
                             val (date, time) = getDateAndTime(series, selector.dateElement)
 
                             val bestOf = calculateBestOf(homeScore, awayScore)
@@ -290,6 +292,11 @@ class LiquipediaParser(
                             }
                             else if (homeScore != -1 && awayScore != -1 && bestOf != null) {
                                 bestOfList.add(bestOf)
+                            }
+
+                            if (isDateTimeUpcoming(date, time)) {
+                                homeScore = 0
+                                awayScore = 0
                             }
 
                             val seriesMatchesList = mutableListOf<Match>()

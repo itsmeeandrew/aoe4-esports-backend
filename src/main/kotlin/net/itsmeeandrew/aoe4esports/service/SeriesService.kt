@@ -20,4 +20,8 @@ class SeriesService(private val seriesRepository: SeriesRepository) {
     fun find(series: Series): Series? {
         return seriesRepository.find(series)
     }
+
+    fun updateScores(id: Int, homeScore: Int, awayScore: Int): Boolean {
+        return seriesRepository.updateScores(id, homeScore, awayScore)
+    }
 }

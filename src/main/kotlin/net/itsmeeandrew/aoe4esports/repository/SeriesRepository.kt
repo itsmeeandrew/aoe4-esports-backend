@@ -72,4 +72,21 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
         })
 
     }
+
+    fun updateScores(id: Int, homeScore: Int, awayScore: Int): Boolean {
+        val sql = """
+            UPDATE Series
+            SET home_score = ?,
+            away_score = ?
+            WHERE id = ?
+        """.trimIndent()
+
+        return try {
+            jdbc.update(sql, homeScore, awayScore, id)
+            true
+        } catch (e: Exception) {
+            println("Error while executing updateScores in Series. ${e.message}")
+            false
+        }
+    }
 }

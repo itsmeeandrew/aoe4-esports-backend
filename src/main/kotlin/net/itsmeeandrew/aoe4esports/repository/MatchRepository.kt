@@ -1,7 +1,11 @@
 package net.itsmeeandrew.aoe4esports.repository
 
 import net.itsmeeandrew.aoe4esports.model.Match
+import org.springframework.jdbc.core.DataClassRowMapper
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.PreparedStatementSetter
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.Statement
@@ -9,6 +13,13 @@ import java.sql.Types
 
 @Repository
 class MatchRepository(private val jdbc: JdbcTemplate) {
+    fun findBySeriesId(id: Int): List<Match> {
+        val sql = "SELECT * FROM Match WHERE series_id = ?"
+        return jdbc.query(sql, PreparedStatementSetter { ps ->
+            ps.setInt(1, id)
+        }, DataClassRowMapper(Match::class.java))
+    }
+
     fun create(match: Match): Match? {
         val sql = """
             INSERT INTO Match (map_id, winner_player_id, series_id, home_civilization_id, away_civilization_id) 
@@ -31,6 +42,25 @@ class MatchRepository(private val jdbc: JdbcTemplate) {
         } catch (e: Exception) {
             println("Error while adding Match to the database. ${e.message}")
             null
+        }
+    }
+
+    fun deleteMany(matches: List<Match>): Boolean {
+        val sql = """
+            DELETE FROM Match
+            WHERE id IN (:ids)
+        """.trimIndent()
+
+        val namedParameterJdbc = NamedParameterJdbcTemplate(jdbc)
+        val parameters = MapSqlParameterSource()
+            .addValue("ids", matches.map { m -> m.id })
+
+        return try {
+            namedParameterJdbc.update(sql, parameters)
+            true
+        } catch (e: Exception) {
+            println("Error while executing deleteMany in MatchRepository. ${e.message}")
+            false
         }
     }
 }

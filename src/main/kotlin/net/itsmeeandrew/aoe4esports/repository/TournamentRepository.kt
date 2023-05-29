@@ -1,5 +1,7 @@
 package net.itsmeeandrew.aoe4esports.repository
 
+import net.itsmeeandrew.aoe4esports.common.TournamentFormat
+import net.itsmeeandrew.aoe4esports.common.TournamentTier
 import net.itsmeeandrew.aoe4esports.model.Tournament
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.JdbcTemplate
@@ -7,6 +9,22 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class TournamentRepository(private val jdbc: JdbcTemplate) {
+    fun findAll(): List<Tournament> {
+        val sql = "SELECT * FROM Tournament"
+        return jdbc.query(sql) { rs, _ ->
+            Tournament(
+                rs.getDate("end_date").toLocalDate(),
+                TournamentFormat.from(rs.getString("format")),
+                rs.getString("id"),
+                rs.getString("logo_url"),
+                rs.getString("name"),
+                rs.getDate("start_date").toLocalDate(),
+                TournamentTier.valueOf(rs.getString("tier")),
+                rs.getString("twitch_url")
+            )
+        }
+    }
+
     fun create(tournament: Tournament): Tournament? {
         return try {
             val sql = """
