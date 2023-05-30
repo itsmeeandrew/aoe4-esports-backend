@@ -1,6 +1,9 @@
 package net.itsmeeandrew.aoe4esports.client
 
+import net.itsmeeandrew.aoe4esports.client.selector.BracketSelector
+import net.itsmeeandrew.aoe4esports.client.selector.GroupSelector
 import net.itsmeeandrew.aoe4esports.common.*
+import net.itsmeeandrew.aoe4esports.common.`interface`.ISelector
 import net.itsmeeandrew.aoe4esports.model.*
 import net.itsmeeandrew.aoe4esports.service.CivilizationService
 import net.itsmeeandrew.aoe4esports.service.MapService
@@ -260,7 +263,7 @@ class LiquipediaParser(
             return getSeriesAndMatches(BracketSelector(getBracketPlayerSelectorPrefix())) + getSeriesAndMatches(GroupSelector())
         }
 
-        private fun getSeriesAndMatches(selector: Selector): List<Pair<Series, List<Match>>> {
+        private fun getSeriesAndMatches(selector: ISelector): List<Pair<Series, List<Match>>> {
             val listOfPairs = mutableListOf<Pair<Series, List<Match>>>()
 
             root.select(selector.container)
