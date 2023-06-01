@@ -26,8 +26,7 @@ class TournamentRoundPhaseRepository(private val jdbc: JdbcTemplate) {
                 ps
             }, keyHolder)
 
-            val createdTournamentRoundPhase = tournamentRoundPhase.copy(id = keyHolder.key?.toInt())
-            createdTournamentRoundPhase
+            tournamentRoundPhase.copy(id = keyHolder.key?.toInt())
         } catch (e: Exception) {
             println("Error while adding TournamentRoundPhase to the database. ${e.message}")
             null

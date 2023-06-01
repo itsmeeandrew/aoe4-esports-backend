@@ -22,7 +22,7 @@ class MatchRepository(private val jdbc: JdbcTemplate) {
 
     fun create(match: Match): Match? {
         val sql = """
-            INSERT INTO Match (map_id, winner_player_id, series_id, home_civilization_id, away_civilization_id) 
+            INSERT INTO Match
             VALUES (?, ?, ?, ?, ?)
         """.trimIndent()
         val keyHolder = GeneratedKeyHolder()
@@ -31,10 +31,10 @@ class MatchRepository(private val jdbc: JdbcTemplate) {
             jdbc.update({ connection ->
                 val ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
                 ps.setObject(1, match.mapId, Types.INTEGER)
-                ps.setObject(2, match.winnerPlayerId, Types.INTEGER)
-                ps.setObject(3, match.seriesId, Types.INTEGER)
-                ps.setObject(4, match.homeCivilizationId)
-                ps.setObject(5, match.awayCivilizationId)
+                ps.setObject(2, match.awayCivilizationId)
+                ps.setObject(3, match.homeCivilizationId)
+                ps.setObject(4, match.seriesId, Types.INTEGER)
+                ps.setObject(5, match.winnerPlayerId, Types.INTEGER)
                 ps
             }, keyHolder)
 

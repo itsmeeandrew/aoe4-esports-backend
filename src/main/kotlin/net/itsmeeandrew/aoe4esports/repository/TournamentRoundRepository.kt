@@ -10,7 +10,7 @@ class TournamentRoundRepository(private val jdbc: JdbcTemplate) {
     fun create(tournamentRound: TournamentRound): TournamentRound? {
         return try {
             val sql = """
-                        INSERT INTO TournamentRound (id, name, tournament_id)
+                        INSERT INTO TournamentRound
                         VALUES (?, ?, ?)
                     """.trimIndent()
             jdbc.update(sql) { ps ->

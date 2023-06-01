@@ -28,7 +28,7 @@ class PlayerRepository(private val jdbc: JdbcTemplate) {
 
     fun create(player: Player): Player? {
         val sql = """
-            INSERT INTO Player (name) 
+            INSERT INTO Player
             VALUES (?)
         """.trimIndent()
         val keyHolder = GeneratedKeyHolder()
@@ -40,7 +40,7 @@ class PlayerRepository(private val jdbc: JdbcTemplate) {
                 ps
             }, keyHolder)
 
-            Player(keyHolder.key?.toInt(), player.name)
+            player.copy(id = keyHolder.key?.toInt())
         } catch (e: Exception) {
             println("Error while adding Player to the database. ${e.message}")
             null
