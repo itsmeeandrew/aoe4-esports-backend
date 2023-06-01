@@ -1,9 +1,9 @@
 package net.itsmeeandrew.aoe4esports.repository
 
 import net.itsmeeandrew.aoe4esports.model.Player
+import org.springframework.jdbc.core.DataClassRowMapper
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.PreparedStatementSetter
-import org.springframework.jdbc.core.ResultSetExtractor
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.Statement
@@ -15,16 +15,7 @@ class PlayerRepository(private val jdbc: JdbcTemplate) {
 
         return jdbc.query(sql, PreparedStatementSetter { ps ->
             ps.setInt(1, id)
-        }, ResultSetExtractor { rs ->
-            if (rs.next()) {
-                Player(
-                    rs.getInt("id"),
-                    rs.getString("name")
-                )
-            } else {
-                null
-            }
-        })
+        }, DataClassRowMapper(Player::class.java)).firstOrNull()
     }
 
     fun findByName(name: String): Player? {
@@ -32,16 +23,7 @@ class PlayerRepository(private val jdbc: JdbcTemplate) {
 
         return jdbc.query(sql, PreparedStatementSetter { ps ->
             ps.setString(1, name)
-        }, ResultSetExtractor { rs ->
-            if (rs.next()) {
-                Player(
-                    rs.getInt("id"),
-                    rs.getString("name")
-                )
-            } else {
-                null
-            }
-        })
+        }, DataClassRowMapper(Player::class.java)).firstOrNull()
     }
 
     fun create(player: Player): Player? {

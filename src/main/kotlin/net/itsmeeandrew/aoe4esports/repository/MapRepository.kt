@@ -1,9 +1,9 @@
 package net.itsmeeandrew.aoe4esports.repository
 
 import net.itsmeeandrew.aoe4esports.model.GMap
+import org.springframework.jdbc.core.DataClassRowMapper
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.PreparedStatementSetter
-import org.springframework.jdbc.core.ResultSetExtractor
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.Statement
@@ -18,14 +18,7 @@ class MapRepository(private val jdbc: JdbcTemplate) {
 
         return jdbc.query(sql, PreparedStatementSetter { ps ->
             ps.setString(1, name)
-        }, ResultSetExtractor { rs ->
-            if (rs.next()) {
-                GMap(
-                    rs.getInt("id"),
-                    rs.getString("name")
-                )
-            } else null
-        })
+        }, DataClassRowMapper(GMap::class.java)).firstOrNull()
     }
 
     fun create(map: GMap): GMap? {

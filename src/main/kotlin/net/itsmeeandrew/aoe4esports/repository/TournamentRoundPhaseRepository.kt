@@ -1,12 +1,11 @@
 package net.itsmeeandrew.aoe4esports.repository
 
 import net.itsmeeandrew.aoe4esports.model.TournamentRoundPhase
+import org.springframework.jdbc.core.DataClassRowMapper
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.PreparedStatementSetter
-import org.springframework.jdbc.core.ResultSetExtractor
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
-import java.sql.ResultSet
 import java.sql.Statement
 
 @Repository
@@ -46,16 +45,7 @@ class TournamentRoundPhaseRepository(private val jdbc: JdbcTemplate) {
             jdbc.query(sql, PreparedStatementSetter { ps ->
                 ps.setString(1, tournamentRoundPhase.name)
                 ps.setObject(2, tournamentRoundPhase.tournamentRoundId)
-            }, ResultSetExtractor { rs: ResultSet ->
-                if (rs.next()) {
-                    TournamentRoundPhase(
-                        id = rs.getInt("id"),
-                        name = rs.getString("name"),
-                        bestOf = rs.getInt("best_of"),
-                        tournamentRoundId = rs.getString("tournament_round_id")
-                    )
-                } else null
-            })
+            }, DataClassRowMapper(TournamentRoundPhase::class.java)).firstOrNull()
         } catch (e: Exception) {
             println("Error while executing findOne in TournamentRoundPhaseRepository. ${e.message}")
             null
