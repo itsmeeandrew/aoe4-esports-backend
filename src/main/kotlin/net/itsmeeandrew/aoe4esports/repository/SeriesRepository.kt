@@ -1,14 +1,12 @@
 package net.itsmeeandrew.aoe4esports.repository
 
 import net.itsmeeandrew.aoe4esports.model.Series
+import net.itsmeeandrew.aoe4esports.model.SeriesRowMapper
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.PreparedStatementSetter
-import org.springframework.jdbc.core.ResultSetExtractor
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.Statement
-import java.time.LocalDate
-import java.time.LocalTime
 
 @Repository
 class SeriesRepository(private val jdbc: JdbcTemplate) {
@@ -55,22 +53,7 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
                 ps.setInt(2, series.awayPlayerId)
                 ps.setString(3, series.tournamentRoundId)
                 ps.setInt(4, series.tournamentRoundPhaseId)
-            }, ResultSetExtractor { rs ->
-                if (rs.next()) {
-                    Series(
-                        awayPlayerId = rs.getInt("away_player_id"),
-                        awayScore = rs.getInt("away_score"),
-                        date = rs.getObject("date", LocalDate::class.java),
-                        id = rs.getInt("id"),
-                        homePlayerId = rs.getInt("home_player_id"),
-                        homeScore = rs.getInt("home_score"),
-                        time = rs.getObject("time", LocalTime::class.java),
-                        tournamentRoundId = rs.getString("tournament_round_id"),
-                        tournamentRoundPhaseId = rs.getInt("tournament_round_phase_id")
-                    )
-                } else null
-        })
-
+            }, SeriesRowMapper()).firstOrNull()
     }
 
     fun updateScores(id: Int, homeScore: Int, awayScore: Int): Boolean {
