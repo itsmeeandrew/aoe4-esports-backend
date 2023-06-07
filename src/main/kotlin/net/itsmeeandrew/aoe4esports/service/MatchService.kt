@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service
 class MatchService(private val matchRepository: MatchRepository) {
     fun create(match: Match): Match? = matchRepository.create(match)
 
-
     fun findBySeriesId(id: Int): List<Match> {
         return matchRepository.findBySeriesId(id)
     }

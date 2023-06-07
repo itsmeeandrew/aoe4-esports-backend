@@ -26,6 +26,8 @@ dependencies {
 	implementation("com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre11")
 	implementation("org.jsoup:jsoup:1.15.4")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
+	testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 }
 
 tasks.withType<KotlinCompile> {

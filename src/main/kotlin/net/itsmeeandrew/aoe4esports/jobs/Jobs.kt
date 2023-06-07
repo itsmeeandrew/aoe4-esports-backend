@@ -26,7 +26,7 @@ private class Jobs(
 
     @PostConstruct
     private fun init() {
-        updateOngoingTournaments()
+
     }
 
     private fun parse(parseHandler: IParseHandler) {
@@ -127,7 +127,6 @@ private class Jobs(
                 addMatch(match.copy(seriesId = createdSeries?.id))
             }
         }
-
     }
 
     inner class UpdateUpcomingTournamentParseHandler: IParseHandler {
