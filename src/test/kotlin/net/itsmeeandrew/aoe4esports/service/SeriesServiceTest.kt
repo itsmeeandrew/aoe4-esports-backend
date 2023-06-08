@@ -1,6 +1,7 @@
 package net.itsmeeandrew.aoe4esports.service
 
 import net.itsmeeandrew.aoe4esports.model.Series
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -19,7 +20,7 @@ class SeriesServiceTest(
     fun `finds one`() {
         val seriesToFind = Series(2, 0, null, null, 1, 2, null, "Golden League/1/Round/1", 1)
         val foundSeries = seriesService.find(seriesToFind)
-        assert(foundSeries?.id == 1)
+        assertTrue(foundSeries?.id == 1)
     }
 
     @Test
@@ -29,7 +30,7 @@ class SeriesServiceTest(
         val newTime = LocalTime.parse("16:00:00")
         seriesService.updateTime(foundSeries?.id!!, newTime)
         val updatedSeries = seriesService.find(seriesToFind)
-        assert(updatedSeries?.time?.equals(newTime) ?: false)
+        assertTrue(updatedSeries?.time?.equals(newTime) ?: false)
 
         seriesService.updateTime(foundSeries.id!!, foundSeries.time!!)
     }
@@ -41,7 +42,7 @@ class SeriesServiceTest(
         val newDate = LocalDate.parse("2023-01-01")
         seriesService.updateDate(foundSeries?.id!!, newDate)
         val updatedSeries = seriesService.find(seriesToFind)
-        assert(updatedSeries?.date?.equals(newDate) ?: false)
+        assertTrue(updatedSeries?.date?.equals(newDate) ?: false)
 
         seriesService.updateDate(foundSeries.id!!, foundSeries.date!!)
     }

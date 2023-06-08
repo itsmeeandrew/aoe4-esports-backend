@@ -1,5 +1,6 @@
 package net.itsmeeandrew.aoe4esports.service
 
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -15,6 +16,6 @@ class MatchServiceTest (
     @Test
     fun `returns matches by series id`() {
         val matches = matchService.findBySeriesId(505)
-        assert(matches.all { m -> m.seriesId == 505 })
+        assertTrue(matches.all { m -> m.seriesId == 505 })
     }
 }
