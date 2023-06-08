@@ -148,11 +148,11 @@ private class Jobs(
                 addSeries(series)
             } else {
                 if (existingSeries.date == null && series.date != null) {
-                    // Update date in DB
+                    seriesService.updateDate(existingSeries.id!!, series.date)
                 }
 
                 if (existingSeries.time == null && series.time != null) {
-                    // Update time in DB
+                    seriesService.updateTime(existingSeries.id!!, series.time)
                 }
             }
         }

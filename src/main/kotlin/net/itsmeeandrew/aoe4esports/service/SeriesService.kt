@@ -3,6 +3,8 @@ package net.itsmeeandrew.aoe4esports.service
 import net.itsmeeandrew.aoe4esports.model.Series
 import net.itsmeeandrew.aoe4esports.repository.SeriesRepository
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Service
 class SeriesService(private val seriesRepository: SeriesRepository) {
@@ -16,12 +18,19 @@ class SeriesService(private val seriesRepository: SeriesRepository) {
         }
     }
 
-    // TODO: Rename to findOne
     fun find(series: Series): Series? {
         return seriesRepository.find(series)
     }
 
     fun updateScores(id: Int, homeScore: Int, awayScore: Int): Boolean {
         return seriesRepository.updateScores(id, homeScore, awayScore)
+    }
+
+    fun updateTime(id: Int, time: LocalTime): Boolean {
+        return seriesRepository.updateTime(id, time)
+    }
+
+    fun updateDate(id: Int, date: LocalDate): Boolean {
+        return seriesRepository.updateDate(id, date)
     }
 }

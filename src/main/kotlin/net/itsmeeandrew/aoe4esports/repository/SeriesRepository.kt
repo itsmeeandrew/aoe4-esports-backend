@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.PreparedStatementSetter
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.Statement
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Repository
 class SeriesRepository(private val jdbc: JdbcTemplate) {
@@ -69,6 +71,38 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
             true
         } catch (e: Exception) {
             println("Error while executing updateScores in Series. ${e.message}")
+            false
+        }
+    }
+
+    fun updateTime(id: Int, time: LocalTime): Boolean {
+        val sql = """
+            UPDATE Series
+            SET time = ?
+            WHERE id = ?
+        """.trimIndent()
+
+        return try {
+            jdbc.update(sql, time, id)
+            true
+        } catch (e: Exception) {
+            println("Error while executing updateTime in Series. ${e.message}")
+            false
+        }
+    }
+
+    fun updateDate(id: Int, date: LocalDate): Boolean {
+        val sql = """
+            UPDATE Series
+            SET date = ?
+            WHERE id = ?
+        """.trimIndent()
+
+        return try {
+            jdbc.update(sql, date, id)
+            true
+        } catch (e: Exception) {
+            println("Error while executing updateDate in Series. ${e.message}")
             false
         }
     }
