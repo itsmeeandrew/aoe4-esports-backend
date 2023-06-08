@@ -20,4 +20,8 @@ class MapService(private val mapRepository: MapRepository) {
     fun findByNameOrCreate(name: String): GMap? {
         return findByName(name) ?: create(GMap(null, name))
     }
+
+    fun deleteByName(name: String): Boolean {
+        return mapRepository.deleteByName(name)
+    }
 }

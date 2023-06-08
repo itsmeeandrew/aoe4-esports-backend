@@ -41,4 +41,19 @@ class MapRepository(private val jdbc: JdbcTemplate) {
             null
         }
     }
+
+    fun deleteByName(name: String): Boolean {
+        val sql = """
+            DELETE FROM Map
+            WHERE name = ?
+        """.trimIndent()
+
+        return try {
+            jdbc.update(sql, name)
+            true
+        } catch (e: Exception) {
+            println("Error while trying to delete Map: ${e.message}")
+            false
+        }
+    }
 }
