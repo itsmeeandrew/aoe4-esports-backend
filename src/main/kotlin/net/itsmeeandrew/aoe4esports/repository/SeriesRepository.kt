@@ -106,4 +106,22 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
             false
         }
     }
+
+    fun delete(series: Series): Boolean {
+        val sql = """
+            DELETE FROM Series
+            WHERE home_player_id = ? AND
+            away_player_id = ? AND
+            tournament_round_id = ? AND
+            tournament_round_phase_id = ?
+        """.trimIndent()
+
+        return try {
+            jdbc.update(sql, series.homePlayerId, series.awayPlayerId, series.tournamentRoundId, series.tournamentRoundPhaseId)
+            true
+        } catch (e: Exception) {
+            println("Error while trying to delete Series: ${e.message}")
+            false
+        }
+    }
 }

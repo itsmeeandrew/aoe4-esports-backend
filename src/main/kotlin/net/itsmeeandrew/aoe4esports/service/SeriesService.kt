@@ -33,4 +33,8 @@ class SeriesService(private val seriesRepository: SeriesRepository) {
     fun updateDate(id: Int, date: LocalDate): Boolean {
         return seriesRepository.updateDate(id, date)
     }
+
+    fun delete(series: Series): Boolean {
+        return seriesRepository.delete(series)
+    }
 }

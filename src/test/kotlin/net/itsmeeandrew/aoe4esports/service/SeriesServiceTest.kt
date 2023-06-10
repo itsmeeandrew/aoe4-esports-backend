@@ -1,6 +1,8 @@
 package net.itsmeeandrew.aoe4esports.service
 
+import net.itsmeeandrew.aoe4esports.common.TestDBUtils
 import net.itsmeeandrew.aoe4esports.model.Series
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,32 +20,61 @@ class SeriesServiceTest(
 ) {
     @Test
     fun `finds one`() {
-        val seriesToFind = Series(2, 0, null, null, 1, 2, null, "Golden League/1/Round/1", 1)
-        val foundSeries = seriesService.find(seriesToFind)
-        assertTrue(foundSeries?.id == 1)
+        assertEquals(seriesService.find(TestDBUtils.SERIES)?.id, TestDBUtils.SERIES.id)
     }
 
     @Test
     fun `updates time`() {
-        val seriesToFind = Series(2, 0, null, null, 1, 2, null, "Golden League/1/Round/1", 1)
-        val foundSeries = seriesService.find(seriesToFind)
         val newTime = LocalTime.parse("16:00:00")
-        seriesService.updateTime(foundSeries?.id!!, newTime)
-        val updatedSeries = seriesService.find(seriesToFind)
-        assertTrue(updatedSeries?.time?.equals(newTime) ?: false)
+        seriesService.updateTime(TestDBUtils.SERIES_ID, newTime)
 
-        seriesService.updateTime(foundSeries.id!!, foundSeries.time!!)
+        assertEquals(
+            newTime,
+            seriesService.find(TestDBUtils.SERIES)?.time
+        )
+
+        seriesService.updateTime(TestDBUtils.SERIES_ID, TestDBUtils.SERIES.time!!)
     }
 
     @Test
     fun `updates date`() {
-        val seriesToFind = Series(2, 0, null, null, 1, 2, null, "Golden League/1/Round/1", 1)
-        val foundSeries = seriesService.find(seriesToFind)
-        val newDate = LocalDate.parse("2023-01-01")
-        seriesService.updateDate(foundSeries?.id!!, newDate)
-        val updatedSeries = seriesService.find(seriesToFind)
-        assertTrue(updatedSeries?.date?.equals(newDate) ?: false)
+        val newDate = LocalDate.parse("2022-03-09")
+        seriesService.updateDate(TestDBUtils.SERIES_ID, newDate)
 
-        seriesService.updateDate(foundSeries.id!!, foundSeries.date!!)
+        assertEquals(
+            newDate,
+            seriesService.find(TestDBUtils.SERIES)?.date
+        )
+
+        seriesService.updateDate(TestDBUtils.SERIES_ID, TestDBUtils.SERIES.date!!)
+    }
+
+    @Test
+    fun `updates scores`() {
+        seriesService.updateScores(TestDBUtils.SERIES_ID, 2, 4)
+        val foundSeries = seriesService.find(TestDBUtils.SERIES)
+        assertEquals(foundSeries?.homeScore, 2)
+        assertEquals(foundSeries?.awayScore, 4)
+
+        seriesService.updateScores(TestDBUtils.SERIES_ID, TestDBUtils.SERIES.homeScore, TestDBUtils.SERIES.awayScore)
+    }
+
+    @Test
+    fun `creates and deletes series`() {
+        val series = Series(
+            TestDBUtils.PLAYER_BEASTY_ID,
+            0,
+            LocalDate.parse("2022-03-11"),
+            null,
+            TestDBUtils.PLAYER_MARINELORD_ID,
+            4,
+            LocalTime.parse("10:00:00"),
+            TestDBUtils.TOURNAMENT_ROUND_ID,
+            TestDBUtils.TOURNAMENT_ROUND_PHASE_ID
+        )
+
+        seriesService.create(series)
+        assertTrue(seriesService.find(series) != null)
+        assertTrue(seriesService.delete(series))
     }
 }
