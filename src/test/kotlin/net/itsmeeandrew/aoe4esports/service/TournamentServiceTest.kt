@@ -1,5 +1,7 @@
 package net.itsmeeandrew.aoe4esports.service
 
+import net.itsmeeandrew.aoe4esports.common.TestDBUtils
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,5 +19,17 @@ class TournamentServiceTest(
     fun `finds all`() {
         val foundTournaments = tournamentService.findAll()
         assertTrue(foundTournaments.isNotEmpty())
+    }
+
+    @Test
+    fun `creates, finds and deletes ongoing`() {
+        val createdTournament = tournamentService.create(TestDBUtils.ONGOING_TOURNAMENT)
+        assertTrue(createdTournament != null)
+
+        val ongoingTournaments = tournamentService.findOngoing()
+        assertEquals(ongoingTournaments[0].id, TestDBUtils.ONGOING_TOURNAMENT.id)
+        assertTrue(ongoingTournaments.size == 1)
+
+        assertTrue(tournamentService.deleteById(createdTournament!!.id))
     }
 }

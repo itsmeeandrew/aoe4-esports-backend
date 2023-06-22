@@ -10,7 +10,15 @@ class TournamentService(private val tournamentRepository: TournamentRepository) 
         return tournamentRepository.findAll()
     }
 
+    fun findOngoing(): List<Tournament> {
+        return tournamentRepository.findOngoing()
+    }
+
     fun create(t: Tournament): Tournament? {
         return tournamentRepository.create(t)
+    }
+
+    fun deleteById(id: String): Boolean {
+        return tournamentRepository.deleteById(id)
     }
 }

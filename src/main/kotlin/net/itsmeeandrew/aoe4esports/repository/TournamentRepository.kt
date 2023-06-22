@@ -13,12 +13,21 @@ class TournamentRepository(private val jdbc: JdbcTemplate) {
         return jdbc.query(sql, TournamentRowMapper())
     }
 
+    fun findOngoing(): List<Tournament> {
+        val sql = """
+            SELECT * FROM Tournament
+            WHERE start_date <= CAST( GETDATE() AS Date ) AND
+            end_date >= CAST( GETDATE() AS Date)
+        """.trimIndent()
+        return jdbc.query(sql, TournamentRowMapper())
+    }
+
     fun create(tournament: Tournament): Tournament? {
         return try {
             val sql = """
-                        INSERT INTO Tournament
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """.trimIndent()
+                INSERT INTO Tournament
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent()
             jdbc.update(sql) { ps ->
                 ps.setString(1, tournament.id)
                 ps.setString(2, tournament.name)
@@ -37,6 +46,21 @@ class TournamentRepository(private val jdbc: JdbcTemplate) {
             println("[TOURNAMENT REPOSITORY]: Error while trying to create tournament. ${e.message}")
             println("Exception name: ${e.javaClass.canonicalName}")
             null
+        }
+    }
+
+    fun deleteById(id: String): Boolean {
+        val sql = """
+            DELETE FROM Tournament
+            WHERE id = ?
+        """.trimIndent()
+
+        return try {
+            jdbc.update(sql, id)
+            true
+        } catch (e: Exception) {
+            println("Error while trying to delete tournament. ${e.message}")
+            false
         }
     }
 }

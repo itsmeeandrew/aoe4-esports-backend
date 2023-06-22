@@ -1,5 +1,6 @@
 package net.itsmeeandrew.aoe4esports.common
 
+import com.fasterxml.jackson.annotation.JsonValue
 import java.time.format.DateTimeFormatter
 
 val liquipediaDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy")
@@ -20,6 +21,7 @@ enum class TournamentFormat(private val formatName: String) {
     FFA("ffa"),
     UNKNOWN("");
 
+    @JsonValue
     override fun toString(): String {
         return formatName
     }

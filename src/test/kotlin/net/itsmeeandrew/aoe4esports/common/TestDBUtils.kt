@@ -1,6 +1,7 @@
 package net.itsmeeandrew.aoe4esports.common
 
 import net.itsmeeandrew.aoe4esports.model.Series
+import net.itsmeeandrew.aoe4esports.model.Tournament
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -13,6 +14,16 @@ class TestDBUtils {
         const val MAP_LIPANY_ID = 2
         const val PLAYER_BEASTY_ID = 1
         const val PLAYER_MARINELORD_ID = 2
+        val ONGOING_TOURNAMENT = Tournament(
+            LocalDate.now().plusWeeks(1),
+            TournamentFormat.ONE_VS_ONE,
+            "Testtournament",
+            "testlogourl",
+            "Teszt tournament",
+            LocalDate.now().minusWeeks(1),
+            TournamentTier.S,
+            "testtwitchurl"
+        )
         const val SERIES_ID = 1
         val SERIES = Series(
             PLAYER_MARINELORD_ID,
@@ -25,5 +36,6 @@ class TestDBUtils {
             TOURNAMENT_ROUND_ID,
             TOURNAMENT_ROUND_PHASE_ID
         )
+
     }
 }
