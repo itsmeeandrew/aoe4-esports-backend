@@ -14,6 +14,9 @@ class TestDBUtils {
         const val MAP_LIPANY_ID = 2
         const val PLAYER_BEASTY_ID = 1
         const val PLAYER_MARINELORD_ID = 2
+        const val PLAYER_DEMU_ID = 3
+        const val PLAYER_1PUPPYPAW_ID = 4
+        const val PLAYER_LEENOCK_ID = 5
         val ONGOING_TOURNAMENT = Tournament(
             LocalDate.now().plusWeeks(1),
             TournamentFormat.ONE_VS_ONE,

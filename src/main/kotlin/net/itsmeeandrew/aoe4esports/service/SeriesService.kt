@@ -1,5 +1,6 @@
 package net.itsmeeandrew.aoe4esports.service
 
+import net.itsmeeandrew.aoe4esports.model.PopulatedSeries
 import net.itsmeeandrew.aoe4esports.model.Series
 import net.itsmeeandrew.aoe4esports.repository.SeriesRepository
 import org.springframework.stereotype.Service
@@ -20,6 +21,10 @@ class SeriesService(private val seriesRepository: SeriesRepository) {
 
     fun find(series: Series): Series? {
         return seriesRepository.find(series)
+    }
+
+    fun findLatest(n: Int): List<PopulatedSeries> {
+        return seriesRepository.findLatest(n)
     }
 
     fun updateScores(id: Int, homeScore: Int, awayScore: Int): Boolean {

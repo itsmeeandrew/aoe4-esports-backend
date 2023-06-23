@@ -16,6 +16,7 @@ import java.time.LocalTime
     locations = ["classpath:application-test.properties"]
 )
 class SeriesServiceTest(
+    @Autowired private val playerService: PlayerService,
     @Autowired private val seriesService: SeriesService
 ) {
     @Test
@@ -76,5 +77,24 @@ class SeriesServiceTest(
         seriesService.create(series)
         assertTrue(seriesService.find(series) != null)
         assertTrue(seriesService.delete(series))
+    }
+
+    @Test
+    fun `finds latest 5`() {
+        val series1 = TestDBUtils.SERIES.copy(date = LocalDate.parse("2024-02-03"), homePlayerId = TestDBUtils.PLAYER_DEMU_ID)
+        val series2 = TestDBUtils.SERIES.copy(date = LocalDate.parse("2024-03-04"), homePlayerId = TestDBUtils.PLAYER_1PUPPYPAW_ID)
+        val series3 = TestDBUtils.SERIES.copy(date = LocalDate.parse("2024-04-05"), homePlayerId = TestDBUtils.PLAYER_LEENOCK_ID)
+        seriesService.create(series1)
+        seriesService.create(series2)
+        seriesService.create(series3)
+
+        val latest3 = seriesService.findLatest(3)
+        assertEquals(TestDBUtils.PLAYER_LEENOCK_ID, playerService.findByName(latest3[0].homePlayer)?.id)
+        assertEquals(TestDBUtils.PLAYER_1PUPPYPAW_ID, playerService.findByName(latest3[1].homePlayer)?.id)
+        assertEquals(TestDBUtils.PLAYER_DEMU_ID, playerService.findByName(latest3[2].homePlayer)?.id)
+
+        seriesService.delete(series1)
+        seriesService.delete(series2)
+        seriesService.delete(series3)
     }
 }
