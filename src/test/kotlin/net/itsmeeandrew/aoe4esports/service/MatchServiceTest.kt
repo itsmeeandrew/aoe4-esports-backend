@@ -2,6 +2,7 @@ package net.itsmeeandrew.aoe4esports.service
 
 import net.itsmeeandrew.aoe4esports.common.TestDBUtils
 import net.itsmeeandrew.aoe4esports.model.Match
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,5 +32,13 @@ class MatchServiceTest (
     fun `returns matches by series id`() {
         val matches = matchService.findBySeriesId(TestDBUtils.SERIES_ID)
         assertTrue(matches.isNotEmpty())
+        matches.forEach { m ->
+            assertEquals(m.seriesId, TestDBUtils.SERIES_ID)
+        }
+    }
+
+    @Test
+    fun `returns null for invalid id in find matches`() {
+        assertEquals(matchService.findPopulatedBySeriesId("invalid id"), null)
     }
 }
