@@ -27,6 +27,15 @@ class SeriesService(private val seriesRepository: SeriesRepository) {
         return seriesRepository.findLatest(n)
     }
 
+    fun findById(id: String): PopulatedSeries? {
+        val parsedId = id.toIntOrNull()
+        if (parsedId != null) {
+            return seriesRepository.findById(parsedId)
+        }
+
+        return null
+    }
+
     fun updateScores(id: Int, homeScore: Int, awayScore: Int): Boolean {
         return seriesRepository.updateScores(id, homeScore, awayScore)
     }

@@ -91,6 +91,39 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
         }
     }
 
+    fun findById(id: Int): PopulatedSeries? {
+        val sql = """
+            SELECT
+            s.id,
+            p1.name as "home_player",
+            p2.name as "away_player",
+            s.home_score,
+            s.away_score,
+            s.date,
+            s.time,
+            t.name as "tournament_name",
+            t.logo_url,
+            tr.name as "tournament_round_name",
+            trp.name as "tournament_round_phase_name"
+            FROM Series s
+            LEFT JOIN Player p1 ON p1.id=s.home_player_id
+            LEFT JOIN Player p2 ON p2.id=s.away_player_id
+            LEFT JOIN TournamentRoundPhase trp ON s.tournament_round_phase_id=trp.id
+            LEFT JOIN TournamentRound tr ON s.tournament_round_id=tr.id
+            LEFT JOIN Tournament t ON tr.tournament_id=t.id
+            WHERE s.id = ?
+        """.trimIndent()
+
+        return try {
+            jdbc.query(sql, PreparedStatementSetter { ps ->
+                ps.setInt(1, id)
+            }, PopulatedSeriesRowMapper()).firstOrNull()
+        } catch (e: Exception) {
+            println("Error while trying to execute findById. ${e.message}")
+            null
+        }
+    }
+
     fun updateScores(id: Int, homeScore: Int, awayScore: Int): Boolean {
         val sql = """
             UPDATE Series

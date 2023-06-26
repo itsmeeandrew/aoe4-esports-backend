@@ -25,6 +25,11 @@ class SeriesServiceTest(
     }
 
     @Test
+    fun `finds by id`() {
+        assertEquals(TestDBUtils.SERIES_ID, seriesService.findById(TestDBUtils.SERIES_ID.toString())?.id)
+    }
+
+    @Test
     fun `updates time`() {
         val newTime = LocalTime.parse("16:00:00")
         seriesService.updateTime(TestDBUtils.SERIES_ID, newTime)
