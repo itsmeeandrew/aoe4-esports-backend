@@ -4,10 +4,23 @@ import net.itsmeeandrew.aoe4esports.model.Tournament
 import net.itsmeeandrew.aoe4esports.model.TournamentRowMapper
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.PreparedStatementSetter
 import org.springframework.stereotype.Repository
 
 @Repository
 class TournamentRepository(private val jdbc: JdbcTemplate) {
+    fun findById(id: String): Tournament? {
+        val sql = "SELECT * FROM Tournament WHERE id = ?"
+        return try {
+            jdbc.query(sql, PreparedStatementSetter { ps ->
+                ps.setString(1, id)
+            }, TournamentRowMapper()).firstOrNull()
+        } catch (e: Exception) {
+            println("Error while trying to find tournament by id. ${e.message}")
+            null
+        }
+    }
+
     fun findAll(): List<Tournament> {
         val sql = "SELECT * FROM Tournament"
         return jdbc.query(sql, TournamentRowMapper())

@@ -32,4 +32,10 @@ class TournamentServiceTest(
 
         assertTrue(tournamentService.deleteById(createdTournament!!.id))
     }
+
+    @Test
+    fun `finds tournament by id`() {
+        val foundTournament = tournamentService.findById(TestDBUtils.TOURNAMENT_ID)
+        assertEquals(TestDBUtils.TOURNAMENT_ID, foundTournament?.id)
+    }
 }

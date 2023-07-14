@@ -32,3 +32,11 @@ fun isTournamentOngoing(tournament: Tournament): Boolean {
 fun isTournamentUpcoming(tournament: Tournament): Boolean {
     return tournament.startDate.isAfter(LocalDate.now())
 }
+
+fun encodeTournamentId(decodedTournamentId: String): String {
+    return decodedTournamentId.replace("/", "-")
+}
+
+fun decodeTournamentId(encdodedTournamentId: String): String {
+    return encdodedTournamentId.replace("-", "/")
+}
