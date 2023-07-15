@@ -3,14 +3,12 @@ package net.itsmeeandrew.aoe4esports.controller
 import net.itsmeeandrew.aoe4esports.model.PopulatedMatch
 import net.itsmeeandrew.aoe4esports.service.MatchService
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = ["http://localhost:3000"])
 class MatchController(private val matchService: MatchService) {
 
     @GetMapping("/matches")

@@ -5,14 +5,12 @@ import net.itsmeeandrew.aoe4esports.common.encodeTournamentId
 import net.itsmeeandrew.aoe4esports.model.Tournament
 import net.itsmeeandrew.aoe4esports.service.TournamentService
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = ["http://localhost:3000"])
 class TournamentController(private val tournamentService: TournamentService) {
 
     @GetMapping("/tournaments/{id}")
