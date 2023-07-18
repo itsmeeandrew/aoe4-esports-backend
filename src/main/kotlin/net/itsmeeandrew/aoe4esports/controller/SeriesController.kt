@@ -1,5 +1,6 @@
 package net.itsmeeandrew.aoe4esports.controller
 
+import net.itsmeeandrew.aoe4esports.common.decodeTournamentId
 import net.itsmeeandrew.aoe4esports.model.PopulatedSeries
 import net.itsmeeandrew.aoe4esports.service.SeriesService
 import org.springframework.http.HttpStatus
@@ -22,5 +23,10 @@ class SeriesController(private val seriesService: SeriesService) {
         if (series == null) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Series does not exist with ID $id.")
         } else return series
+    }
+
+    @GetMapping("/series")
+    fun getSeriesByTournamentId(@RequestParam tournamentId: String): List<PopulatedSeries> {
+        return seriesService.findByTournamentId(decodeTournamentId(tournamentId))
     }
 }

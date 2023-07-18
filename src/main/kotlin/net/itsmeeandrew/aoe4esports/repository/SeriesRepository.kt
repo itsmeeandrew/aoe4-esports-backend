@@ -70,6 +70,7 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
             s.away_score,
             s.date,
             s.time,
+            t.id as "tournament_id",
             t.name as "tournament_name",
             t.logo_url,
             tr.name as "tournament_round_name",
@@ -94,17 +95,18 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
     fun findById(id: Int): PopulatedSeries? {
         val sql = """
             SELECT
-            s.id,
-            p1.name as "home_player",
-            p2.name as "away_player",
-            s.home_score,
-            s.away_score,
-            s.date,
-            s.time,
-            t.name as "tournament_name",
-            t.logo_url,
-            tr.name as "tournament_round_name",
-            trp.name as "tournament_round_phase_name"
+                s.id,
+                p1.name as "home_player",
+                p2.name as "away_player",
+                s.home_score,
+                s.away_score,
+                s.date,
+                s.time,
+                t.id as "tournament_id",
+                t.name as "tournament_name",
+                t.logo_url,
+                tr.name as "tournament_round_name",
+                trp.name as "tournament_round_phase_name"
             FROM Series s
             LEFT JOIN Player p1 ON p1.id=s.home_player_id
             LEFT JOIN Player p2 ON p2.id=s.away_player_id
@@ -121,6 +123,40 @@ class SeriesRepository(private val jdbc: JdbcTemplate) {
         } catch (e: Exception) {
             println("Error while trying to execute findById. ${e.message}")
             null
+        }
+    }
+
+    fun findByTournamentId(tournamentId: String): List<PopulatedSeries> {
+        val sql = """
+            SELECT
+                s.id,
+                p1.name as "home_player",
+                p2.name as "away_player",
+                s.home_score,
+                s.away_score,
+                s.date,
+                s.time,
+                t.id as "tournament_id",
+                t.name as "tournament_name",
+                t.logo_url,
+                tr.name as "tournament_round_name",
+                trp.name as "tournament_round_phase_name"
+            FROM Series s
+            LEFT JOIN Player p1 ON p1.id=s.home_player_id
+            LEFT JOIN Player p2 ON p2.id=s.away_player_id
+            LEFT JOIN TournamentRoundPhase trp ON s.tournament_round_phase_id=trp.id
+            LEFT JOIN TournamentRound tr ON s.tournament_round_id=tr.id
+            LEFT JOIN Tournament t ON tr.tournament_id=t.id
+            WHERE t.id = ?
+        """.trimIndent()
+
+        return try {
+            jdbc.query(sql, PreparedStatementSetter { ps ->
+                ps.setString(1, tournamentId)
+            }, PopulatedSeriesRowMapper())
+        } catch (e: Exception) {
+            println("Error while trying to find series by tournament id. ${e.message}")
+            listOf()
         }
     }
 

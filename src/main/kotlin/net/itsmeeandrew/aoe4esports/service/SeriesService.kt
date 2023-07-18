@@ -36,6 +36,10 @@ class SeriesService(private val seriesRepository: SeriesRepository) {
         return null
     }
 
+    fun findByTournamentId(tournamentId: String): List<PopulatedSeries> {
+        return seriesRepository.findByTournamentId(tournamentId)
+    }
+
     fun updateScores(id: Int, homeScore: Int, awayScore: Int): Boolean {
         return seriesRepository.updateScores(id, homeScore, awayScore)
     }

@@ -11,9 +11,10 @@ data class PopulatedSeries(
     val homePlayer: String,
     val homeScore: Int,
     val awayScore: Int,
-    val date: LocalDate,
-    val time: LocalTime,
+    val date: LocalDate?,
+    val time: LocalTime?,
     val tournament: String,
+    val tournamentId: String,
     val tournamentRound: String,
     val tournamentRoundPhase: String,
     val logoUrl: String
@@ -30,6 +31,7 @@ class PopulatedSeriesRowMapper: RowMapper<PopulatedSeries> {
             date = rs.getObject("date", LocalDate::class.java),
             time = rs.getObject("time", LocalTime::class.java),
             tournament = rs.getString("tournament_name"),
+            tournamentId = rs.getString("tournament_id"),
             tournamentRound = rs.getString("tournament_round_name"),
             tournamentRoundPhase = rs.getString("tournament_round_phase_name"),
             logoUrl = rs.getString("logo_url")
