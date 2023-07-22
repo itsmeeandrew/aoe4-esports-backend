@@ -21,6 +21,11 @@ class TournamentController(private val tournamentService: TournamentService) {
         } else return tournament
     }
 
+    @GetMapping("/tournaments/{id}/maps")
+    fun getTournamentMaps(@PathVariable id: String): List<String> {
+        return tournamentService.getMaps(decodeTournamentId(id))
+    }
+
     @GetMapping("/tournaments/ongoing")
     fun getOngoingTournaments(): List<Tournament> {
         return tournamentService.findOngoing().map { t -> t.copy(id = encodeTournamentId(t.id)) }

@@ -38,4 +38,10 @@ class TournamentServiceTest(
         val foundTournament = tournamentService.findById(TestDBUtils.TOURNAMENT_ID)
         assertEquals(TestDBUtils.TOURNAMENT_ID, foundTournament?.id)
     }
+
+    @Test
+    fun `gets maps for tournament`() {
+        val maps = tournamentService.getMaps(TestDBUtils.TOURNAMENT_ID)
+        assertTrue(maps.isNotEmpty())
+    }
 }

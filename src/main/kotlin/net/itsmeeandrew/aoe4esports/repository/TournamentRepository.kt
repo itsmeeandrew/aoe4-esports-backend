@@ -5,6 +5,7 @@ import net.itsmeeandrew.aoe4esports.model.TournamentRowMapper
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.PreparedStatementSetter
+import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -74,6 +75,28 @@ class TournamentRepository(private val jdbc: JdbcTemplate) {
         } catch (e: Exception) {
             println("Error while trying to delete tournament. ${e.message}")
             false
+        }
+    }
+
+    fun getMaps(id: String): List<String> {
+        val sql = """
+            SELECT DISTINCT map.name
+            FROM Match m
+            LEFT JOIN Series s on s.id = m.series_id
+            LEFT JOIN TournamentRound tr on tr.id = s.tournament_round_id
+            LEFT JOIN Tournament t on t.id = tr.tournament_id
+            LEFT JOIN Map map on map.id = m.map_id
+            WHERE t.id = ? AND 
+            map.name IS NOT NULL
+        """.trimIndent()
+
+        return try {
+            jdbc.query(sql, PreparedStatementSetter { ps ->
+                ps.setString(1, id)
+            }, RowMapper { rs, _ -> rs.getString(1) })
+        } catch (e: Exception) {
+            println("Error while trying to get maps for tournament. ${e.message}")
+            listOf()
         }
     }
 }

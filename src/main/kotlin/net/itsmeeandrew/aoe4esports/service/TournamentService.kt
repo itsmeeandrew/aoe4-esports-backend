@@ -25,4 +25,8 @@ class TournamentService(private val tournamentRepository: TournamentRepository) 
     fun deleteById(id: String): Boolean {
         return tournamentRepository.deleteById(id)
     }
+
+    fun getMaps(id: String): List<String> {
+        return tournamentRepository.getMaps(id).sorted()
+    }
 }
